@@ -8,11 +8,12 @@
 #include <limits.h>
 
 #define MAX_DATE_LENGTH 20
+#define MAX_BORROWER_ID_LENGTH 20
 
 
 // Add genre to the BST
-void addGenre(struct BSTNode **root, const char *genreName) {
-    struct BSTNode *newNode = (struct BSTNode *)malloc(sizeof(struct BSTNode));
+void addGenre(struct BSTNodeBook **root, const char *genreName) {
+    struct BSTNodeBook *newNode = (struct BSTNodeBook *)malloc(sizeof(struct BSTNodeBook));
     if (newNode == NULL) {
         perror("Error allocating memory");
         exit(EXIT_FAILURE);
@@ -26,13 +27,13 @@ void addGenre(struct BSTNode **root, const char *genreName) {
 }
 
 // Add book to the BST
-void addBook(struct BSTNode **root, const char *genreName, struct LibraryBook *book) {
+void addBook(struct BSTNodeBook **root, const char *genreName, struct LibraryBook *book) {
     if (*root == NULL) {
         addGenre(root, genreName);
     }
 
-    struct BSTNode *current = *root;
-    struct BSTNode *parent = NULL;
+    struct BSTNodeBook *current = *root;
+    struct BSTNodeBook *parent = NULL;
 
     while (current != NULL) {
         parent = current;
@@ -47,7 +48,7 @@ void addBook(struct BSTNode **root, const char *genreName, struct LibraryBook *b
         }
     }
 
-    struct BSTNode *newNode = (struct BSTNode *)malloc(sizeof(struct BSTNode));
+    struct BSTNodeBook *newNode = (struct BSTNodeBook *)malloc(sizeof(struct BSTNodeBook));
     if (newNode == NULL) {
         perror("Error allocating memory");
         exit(EXIT_FAILURE);
@@ -65,11 +66,11 @@ void addBook(struct BSTNode **root, const char *genreName, struct LibraryBook *b
 }
 
 // Display all books in the BST
-void displayAllBooks(struct BSTNode *root) {
+void displayAllBooks(struct BSTNodeBook *root) {
     if (root != NULL) {
         displayAllBooks(root->left);
 
-        printf("Genre: %s\n", root->genre.name);
+        printf("Genre: %s\n\n", root->genre.name);
         for (int i = 0; i < root->genre.numBooks; i++) {
             struct LibraryBook *book = &root->genre.books[i];
             printf("Title: %s\n", book->title);
@@ -78,6 +79,7 @@ void displayAllBooks(struct BSTNode *root) {
             printf("Year Published: %d\n", book->yearPublished);
             printf("Issue Date: %s", asctime(localtime(&book->issueDate)));
             printf("Return Date: %s", asctime(localtime(&book->returnDate)));
+            printf("Borrower ID: %d\n", book->borrower.ID);
             printf("\n");
         }
 
@@ -86,13 +88,13 @@ void displayAllBooks(struct BSTNode *root) {
 }
 
 // Remove all copies of the Book from the BST
-void removeBook(struct BSTNode **root, const char *genreName, const char *ISBN) {
+void removeBook(struct BSTNodeBook **root, const char *genreName, const char *ISBN) {
     if (*root == NULL) {
         return;
     }
 
-    struct BSTNode *current = *root;
-    struct BSTNode *parent = NULL;
+    struct BSTNodeBook *current = *root;
+    struct BSTNodeBook *parent = NULL;
 
     while (current != NULL) {
         if (strcmp(genreName, current->genre.name) < 0) {
@@ -120,12 +122,12 @@ void removeBook(struct BSTNode **root, const char *genreName, const char *ISBN) 
 
 
 // Search for a book in the BST
-struct LibraryBook *searchBook(struct BSTNode *root, const char *genreName, const char *ISBN) {
+struct LibraryBook *searchBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN) {
     if (root == NULL) {
         return NULL;
     }
 
-    struct BSTNode *current = root;
+    struct BSTNodeBook *current = root;
 
     while (current != NULL) {
         if (strcmp(genreName, current->genre.name) < 0) {
@@ -147,7 +149,7 @@ struct LibraryBook *searchBook(struct BSTNode *root, const char *genreName, cons
 }
 
 // check if the book is available
-int isBookAvailable(struct BSTNode *root, const char *genreName, const char *ISBN) {
+int isBookAvailable(struct BSTNodeBook *root, const char *genreName, const char *ISBN) {
     struct LibraryBook *book = searchBook(root, genreName, ISBN);
     if (book == NULL) {
         return 0;
@@ -157,7 +159,7 @@ int isBookAvailable(struct BSTNode *root, const char *genreName, const char *ISB
 }
 
 
-void borrowBook(struct BSTNode *root, const char *genreName, const char *ISBN, struct Borrower *borrower) {
+void borrowBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN, struct Borrower *borrower) {
     struct LibraryBook *book = searchBook(root, genreName, ISBN);
     if (book == NULL) {
         printf("Book not found\n");
@@ -187,10 +189,8 @@ void borrowBook(struct BSTNode *root, const char *genreName, const char *ISBN, s
 }
 
 
-
-
 // Display all books borrowed by a borrower
-void displayBorrowedBooks(struct BSTNode *root, struct Borrower *borrower) {
+void displayBorrowedBooks(struct BSTNodeBook *root, struct Borrower *borrower) {
     for (int i = 0; i < borrower->numBorrowedBooks; i++) {
         struct LibraryBook *book = borrower->borrowedBooks[i];
         printf("Title: %s\n", book->title);
@@ -204,7 +204,7 @@ void displayBorrowedBooks(struct BSTNode *root, struct Borrower *borrower) {
 }
 
 // Calculate fine for a borrower
-int calculateFine(struct BSTNode *root, struct Borrower *borrower) {
+int calculateFine(struct BSTNodeBook *root, struct Borrower *borrower) {
     int fine = 0;
     time_t currentTime = time(NULL);
 
@@ -219,7 +219,7 @@ int calculateFine(struct BSTNode *root, struct Borrower *borrower) {
 }
 
 // Return a book
-void returnBook(struct BSTNode *root, const char *genreName, const char *ISBN, struct Borrower *borrower) {
+void returnBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN, struct Borrower *borrower) {
     struct LibraryBook *book = searchBook(root, genreName, ISBN);
     if (book == NULL) {
         printf("Book not found\n");
@@ -255,7 +255,7 @@ void returnBook(struct BSTNode *root, const char *genreName, const char *ISBN, s
 
 
 // Check if a borrower is late in returning books
-int isBorrowerLate(struct BSTNode *root, struct Borrower *borrower) {
+int isBorrowerLate(struct BSTNodeBook *root, struct Borrower *borrower) {
     time_t currentTime = time(NULL);
 
     for (int i = 0; i < borrower->numBorrowedBooks; i++) {
@@ -269,7 +269,7 @@ int isBorrowerLate(struct BSTNode *root, struct Borrower *borrower) {
 }
 
 // Display all genres in the BST
-void displayAllGenres(struct BSTNode *root) {
+void displayAllGenres(struct BSTNodeBook *root) {
     if (root != NULL) {
         displayAllGenres(root->left);
         printf("Genre: %s\n", root->genre.name);
@@ -279,26 +279,7 @@ void displayAllGenres(struct BSTNode *root) {
 
 
 // Helper function to read a string enclosed in double quotes
-void readString(FILE *file, char *buffer, size_t bufferSize) {
-    int c;
-    size_t i = 0;
-   
-    while ((c = fgetc(file)) != EOF && (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '"')) {
-        if (c == '"') {
-            break; // Break if the opening double quote is encountered
-        }
-    }
-
-    while ((c = fgetc(file)) != EOF && c != '"') {
-        if (i < bufferSize - 1) {
-            buffer[i++] = (char)c;
-        }
-    }
-    buffer[i] = '\0'; 
-}
-
-
-void ReadDatabase(struct BSTNode **root, const char *filename) {
+void ReadDatabase(struct BSTNodeBook **root, const char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         perror("Error opening file");
@@ -307,45 +288,29 @@ void ReadDatabase(struct BSTNode **root, const char *filename) {
 
     char genreName[MAX_GENRE_LENGTH];
     struct LibraryBook book;
-    char titleBuffer[MAX_TITLE_LENGTH];
-    char authorBuffer[MAX_AUTHOR_LENGTH];
-    char issueDateBuffer[MAX_DATE_LENGTH];
-    char returnDateBuffer[MAX_DATE_LENGTH];
-    int borrowerID;
 
-    int n = 0;
-    while (fscanf(file, "%s", genreName) == 1 && n < 7) {
-
-        readString(file, titleBuffer, sizeof(titleBuffer));
-        readString(file, authorBuffer, sizeof(authorBuffer));
+    while (fscanf(file, "%s", genreName) == 1) {
+        fscanf(file, "%s", book.title);
+        fscanf(file, "%s", book.author);
         fscanf(file, "%s", book.ISBN);
         fscanf(file, "%d", &book.numCopies);
         fscanf(file, "%d", &book.isAvailable);
         fscanf(file, "%d", &book.yearPublished);
-        fscanf(file, "%s", issueDateBuffer);
-        fscanf(file, "%s", returnDateBuffer);
-        fscanf(file, "%d", &borrowerID); 
-        // Convert issueDate and returnDate to time_t
-        struct tm tm = {0};
-        strptime(issueDateBuffer, "%Y-%m-%d", &tm);
-        book.issueDate = mktime(&tm);
-        strptime(returnDateBuffer, "%Y-%m-%d", &tm);
-        book.returnDate = mktime(&tm);
+        fscanf(file, "%ld", &book.issueDate);
+        fscanf(file, "%ld", &book.returnDate);
+        char borrowerID[MAX_BORROWER_ID_LENGTH];
+        fscanf(file, "%s", borrowerID);
+        book.borrower.ID = strtol(borrowerID, NULL, 10);
 
-    
-        // Add book to the BST
         addBook(root, genreName, &book);
-
-        printf("\n");
     }
 
     fclose(file);
 }
 
 
-
 // Helper function to perform in-order traversal and write to file
-void writeBSTToFileHelper(struct BSTNode *root, FILE *file) {
+void writeBSTToFileHelper(struct BSTNodeBook *root, FILE *file) {
     if (root == NULL)
         return;
 
@@ -354,17 +319,17 @@ void writeBSTToFileHelper(struct BSTNode *root, FILE *file) {
     // Write the current node to the file
     for (int i = 0; i < root->genre.numBooks; i++) {
         struct LibraryBook *book = &(root->genre.books[i]);
-        fprintf(file, "%s \"%s\" \"%s\" %s %d %d %d %ld %ld\n", 
+        fprintf(file, "%s %s %s %s %d %d %d %ld %ld %d\n", 
                 root->genre.name, book->title, book->author, 
                 book->ISBN, book->numCopies, book->isAvailable, 
-                book->yearPublished, book->issueDate, book->returnDate);
+                book->yearPublished, book->issueDate, book->returnDate, book->borrower.ID);
     }
 
     writeBSTToFileHelper(root->right, file);
 }
 
 // Function to write BST to file
-void writeBSTToFile(struct BSTNode *root, const char *filename) {
+void writeBSTToFile(struct BSTNodeBook *root, const char *filename) {
     FILE *file = fopen(filename, "w");
     if (file == NULL) {
         printf("Error opening file.\n");
@@ -378,10 +343,13 @@ void writeBSTToFile(struct BSTNode *root, const char *filename) {
 
 
 
+
+
 int main(){
-    struct BSTNode *root = NULL;
+    struct BSTNodeBook *root = NULL;
     ReadDatabase(&root, "../database/Books/books.txt");
     displayAllBooks(root);
     writeBSTToFile(root, "../database/Books/books.txt");
+ 
     return 0;
 }

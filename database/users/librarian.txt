@@ -1,0 +1,3 @@
+lib1 John lib11@example.com password123
+lib2 Douglas lib22@example.com secure45
+lib3 Scott lib3@example.com pass789

@@ -33,10 +33,10 @@ struct Genre {
 };
 
 // Structure for a BST node
-struct BSTNode {
+struct BSTNodeBook {
     struct Genre genre;
-    struct BSTNode *left;
-    struct BSTNode *right;
+    struct BSTNodeBook *left;
+    struct BSTNodeBook *right;
 };
 
 // Function prototypes

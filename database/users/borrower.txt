@@ -1,1 +1,3 @@
-ajitesh ajitesh@2003
+username1 John password123 1234567890 1 NULL NULL NULL 0 0 0
+username2 Jane password456 9876543210 2 NULL NULL NULL 0 0 0
+username3 Michael password789 5551234567 3 NULL NULL NULL 0 0 0

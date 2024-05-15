@@ -83,6 +83,7 @@ void startServer(int port)
 
             // Handle authentication
             IsAuthenticated =  authHandler(new_socket);
+
                    
 
             close(new_socket); 
