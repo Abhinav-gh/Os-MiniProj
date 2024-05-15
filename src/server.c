@@ -9,6 +9,7 @@
 #include "../header/server.h"
 #include "../header/auth.h"
 
+int IsAuthenticated = 0;
 
 void startServer(int port) 
 {
@@ -81,7 +82,7 @@ void startServer(int port)
 
 
             // Handle authentication
-            authHandler(new_socket);
+            IsAuthenticated =  authHandler(new_socket);
                    
 
             close(new_socket); 

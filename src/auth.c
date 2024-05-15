@@ -10,7 +10,7 @@
 
 char buffer[BUFFER_SIZE] = {0};
 
-void authHandler(int new_socket)
+int authHandler(int new_socket)
 {
     char username[BUFFER_SIZE] = {0};
     char password[BUFFER_SIZE] = {0};
@@ -36,9 +36,11 @@ void authHandler(int new_socket)
     // Authenticate user
     if (authenticate_user(username, password, role)) {
         send(new_socket, "Authenticated", strlen("Authenticated"), 0);
-    } else {
-        send(new_socket, "Not Authenticated", strlen("Not Authenticated"), 0);
-    }
+        return 1;
+    } 
+
+    send(new_socket, "Not Authenticated", strlen("Not Authenticated"), 0);
+    return 0;
 }
 
 
@@ -67,20 +69,20 @@ User *read_user_data(const char *filename)
 int authenticate_user(const char *username, const char *password, const char *role)
 {
     if(strcmp(role, "admin") == 0){
-        User *user = read_user_data("../database/admin.txt");
+        User *user = read_user_data("../users/database/admin.txt");
     
         if (strcmp(user->username, username) == 0 && strcmp(user->password, password) == 0) 
             return 1;    
     }
 
     if(strcmp(role, "librarian") == 0){
-        User *user = read_user_data("../database/librarian.txt");
+        User *user = read_user_data("../users/database/librarian.txt");
         if (strcmp(user->username, username) == 0 && strcmp(user->password, password) == 0) 
             return 1;       
     }
 
     if(strcmp(role, "borrower") == 0){
-        User *user = read_user_data("../database/borrower.txt");
+        User *user = read_user_data("../users/database/borrower.txt");
         if (strcmp(user->username, username) == 0 && strcmp(user->password, password) == 0) 
             return 1;
     }
