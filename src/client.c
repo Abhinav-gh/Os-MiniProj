@@ -65,7 +65,7 @@ void connectToServer(const char *server_ip)
 // --->>>>>>>ADDED BY ABHINAV <<<<<<----
 void FunctionalityMenu(int role)
 {
-    role==-1? perror("Role not recognized by server\n"):NULL;   //error handling
+    role == -1 ? perror("Role not recognized by server\n") : NULL; // error handling
     pthread_mutex_lock(&mutex);
 
     role == 0 ? BorrowerMenu(sock) : role == 1 ? LibrarianMenu(sock)
@@ -78,9 +78,7 @@ FunctionalityMenuWrapper()
     int role = -1;
     if (isAuthenticated == 1)
     {
-        // printf("Authentication successful for :");
         read(sock, buffer, BUFFER_SIZE);
-        printf(" %s\n", buffer);
         if (strcmp(buffer, "borrower") == 0)
         {
             role = 0;
@@ -94,8 +92,7 @@ FunctionalityMenuWrapper()
             role = 2;
         }
         else
-        {
-            // handle error
+        { // handle error
             perror("Role not recognized by server\n");
             exit(1);
         }
