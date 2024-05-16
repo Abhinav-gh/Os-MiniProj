@@ -30,10 +30,35 @@ void borrowerFunc(int new_socket, struct Node *root)
             send(new_socket, booksInfo, strlen(booksInfo), 0);
             free(booksInfo);
         }
-        else if (strcmp(requestedFunc, "borrowed") == 0)
+        else if (strcmp(requestedFunc, "search") == 0)
         {
             // view all borrowed books
-            send(new_socket, "Borrowed books viewed", strlen("Borrowed books viewed"), 0);
+            char isbn[BUFFER_SIZE] = {0};
+            char genre[BUFFER_SIZE] = {0};
+            int valread = read(new_socket, buffer, BUFFER_SIZE);
+            buffer[valread] = '\0';
+            strncpy(isbn, buffer, BUFFER_SIZE - 1);
+            printf("ISBN: %s\n", isbn);
+
+            valread = read(new_socket, buffer, BUFFER_SIZE);
+            buffer[valread] = '\0';
+            strncpy(genre, buffer, BUFFER_SIZE - 1);
+            printf("Genre: %s\n", genre);
+            // now we have to use this function to serach book struct LibraryBook *searchBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN)
+            struct LibraryBook *searchedBook = searchBook(root, genre, isbn);
+            if (searchedBook == NULL)
+            {
+                send(new_socket, "Book not found", strlen("Book not found"), 0);
+            }
+            else
+            {
+                printf("book found\n");
+                char *bookInfo;
+                getBookInfo(searchedBook, &bookInfo);
+                printf("Book Info: %s\n", bookInfo);
+                send(new_socket, bookInfo, strlen(bookInfo), 0);
+            }
+            // send(new_socket, "searched", strlen("searched"), 0);
         }
         else if (strcmp(requestedFunc, "logout") == 0)
         {

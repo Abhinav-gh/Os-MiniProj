@@ -76,7 +76,7 @@ void BorrowerMenuPrinter()
     printf("1.) Borrow a book\n");
     printf("2.) Return a book\n");
     printf("3.) View all books\n");
-    printf("4.) Borrowed books\n");
+    printf("4.) Search a book\n");
     printf("5.) Logout\n\n");
     printf("6.) Show menu again\n\n");
     printf("Enter your choice: ");
@@ -104,7 +104,15 @@ void BorrowerMenu(int sock)
             send(sock, "view", strlen("view"), 0);
             break;
         case 4:
-            send(sock, "borrowed", strlen("borrowed"), 0);
+            send(sock, "search", strlen("search"), 0);
+            printf("Enter the book ISBN you want to search: ");
+            char isbn[100];
+            scanf("%s", isbn);
+            send(sock, isbn, strlen(isbn), 0);
+            printf("Enter the genre of the book: ");
+            char genre[100];
+            scanf("%s", genre);
+            send(sock, genre, strlen(genre), 0);
             break;
         case 5:
             send(sock, "logout", strlen("logout"), 0);

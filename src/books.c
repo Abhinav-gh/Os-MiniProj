@@ -225,7 +225,44 @@ struct LibraryBook *searchBook(struct BSTNodeBook *root, const char *genreName, 
 
     return NULL;
 }
+// Display info about a particular book in the BST
+void displayBookInfo(struct BSTNodeBook *root, const char *genreName, const char *ISBN)
+{
+    struct LibraryBook *book = searchBook(root, genreName, ISBN);
+    if (book == NULL)
+    {
+        printf("Book not found\n");
+        return;
+    }
 
+    printf("Title: %s\n", book->title);
+    printf("Author: %s\n", book->author);
+    printf("ISBN: %s\n", book->ISBN);
+    printf("Year Published: %d\n", book->yearPublished);
+    printf("Issue Date: %s", asctime(localtime(&book->issueDate)));
+    printf("Return Date: %s", asctime(localtime(&book->returnDate)));
+    printf("Borrower ID: %d\n", book->borrower.ID);
+}
+
+void getBookInfo(struct LibraryBook *book, char *bookInfo)
+{
+    if (book == NULL)
+    {
+        strcpy(bookInfo, "Book not found");
+        return;
+    }
+    // Initialize the string
+    strcpy(bookInfo, "");
+    // Concatenate book information to the string
+    sprintf(bookInfo, "Title: %s\n", book->title);
+    sprintf(bookInfo + strlen(bookInfo), "Author: %s\n", book->author);
+    sprintf(bookInfo + strlen(bookInfo), "ISBN: %s\n", book->ISBN);
+    sprintf(bookInfo + strlen(bookInfo), "Year Published: %d\n", book->yearPublished);
+    sprintf(bookInfo + strlen(bookInfo), "Issue Date: %s", asctime(localtime(&book->issueDate)));
+    sprintf(bookInfo + strlen(bookInfo), "Return Date: %s", asctime(localtime(&book->returnDate)));
+    sprintf(bookInfo + strlen(bookInfo), "Borrower ID: %d\n", book->borrower.ID);
+    // printf("Book Info: %s\n", bookInfo);
+}
 // check if the book is available
 int isBookAvailable(struct BSTNodeBook *root, const char *genreName, const char *ISBN)
 {
