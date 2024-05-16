@@ -102,9 +102,10 @@ void BorrowerMenu(int sock){
             break;
     }
 
-    // Listen for incoming messages from the server
-    read(sock, message, BUFFER_SIZE);       
-    printf("%s\n", message);    // server tells if authenticated or not
+    // // Listen for incoming messages from the server
+    // read(sock, message, BUFFER_SIZE);       
+    // printf("%s\n", message);    // server tells if authenticated or not
+    
 }
 void LibrarianMenu(int sock){
     int choice;
