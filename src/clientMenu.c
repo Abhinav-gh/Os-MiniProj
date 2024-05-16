@@ -11,7 +11,6 @@
 #define BUFFER_SIZE 1024
 char message[BUFFER_SIZE] = {0};
 
-
 int loginMenu(int sock) // returns if authenticated or not
 {
 
@@ -37,29 +36,29 @@ int loginMenu(int sock) // returns if authenticated or not
     usleep(100000); // micro seconds
     send(sock, password, strlen(password), 0);
     usleep(100000);
-    
+
     switch (choice)
     {
-        case 1:
-            send(sock, "borrower", strlen("borrower"), 0);
-            break;
-        case 2:
-            send(sock, "librarian", strlen("librarian"), 0);
-            break;
-        case 3:
-            send(sock, "admin", strlen("admin"), 0);
-            break;
-        case 4:
-            printf("Exiting application...\n");
-            printf("Thank you for using our application.\n Take care!\n");
-            sleep(1);
-            exit(0);
-            break;
+    case 1:
+        send(sock, "borrower", strlen("borrower"), 0);
+        break;
+    case 2:
+        send(sock, "librarian", strlen("librarian"), 0);
+        break;
+    case 3:
+        send(sock, "admin", strlen("admin"), 0);
+        break;
+    case 4:
+        printf("Exiting application...\n");
+        printf("Thank you for using our application.\n Take care!\n");
+        sleep(1);
+        exit(0);
+        break;
     }
 
     // Listen for incoming messages from the server
-    read(sock, message, BUFFER_SIZE);       
-    printf("%s\n", message);    // server tells if authenticated or not
+    read(sock, message, BUFFER_SIZE);
+    printf("%s\n", message); // server tells if authenticated or not
     if (strcmp(message, "Authenticated") == 0)
     {
         return 1;
@@ -68,24 +67,33 @@ int loginMenu(int sock) // returns if authenticated or not
     {
         return 0;
     }
-
 }
 
 // ---------->>>>>>>>>>> Added by Abhinav  <<<<<<<<<<<<----------
-void BorrowerMenu(int sock){
-    send(sock, "borrower", strlen("borrower"), 0); // send role to server
-    int choice;
+void BorrowerMenuPrinter()
+{
     printf("----------------Borrower Menu----------------\n");
     printf("1.) Borrow a book\n");
     printf("2.) Return a book\n");
     printf("3.) View all books\n");
     printf("4.) Borrowed books\n");
     printf("5.) Logout\n\n");
+    printf("6.) Show menu again\n\n");
     printf("Enter your choice: ");
-    scanf("%d", &choice);
+}
+void BorrowerMenu(int sock)
+{
+    send(sock, "borrower", strlen("borrower"), 0); // send role to server
+    BorrowerMenuPrinter();
 
-    switch (choice)
+    int choice;
+
+    while (choice != 5)
     {
+
+        scanf("%d", &choice);
+        switch (choice)
+        {
         case 1:
             send(sock, "borrow", strlen("borrow"), 0);
             break;
@@ -101,28 +109,41 @@ void BorrowerMenu(int sock){
         case 5:
             send(sock, "logout", strlen("logout"), 0);
             break;
+
+        case 6:
+            BorrowerMenuPrinter();
+            continue;
+        default:
+            printf("Invalid choice\n");
+        }
+        // Listen for incoming messages from the server
+        read(sock, message, BUFFER_SIZE);
+        printf("%s\n", message); // server tells if authenticated or not
+        printf("Enter your choice: ");
     }
-
-    // // Listen for incoming messages from the server
-    // read(sock, message, BUFFER_SIZE);  
-    // printf("%s\n", message);    // server tells if authenticated or not
-
 }
-void LibrarianMenu(int sock){
-        send(sock, "borrower", strlen("borrower"), 0); // send role to server
-
-    int choice;
+void LibraryMenuPrinter()
+{
     printf("----------------Librarian Menu----------------\n");
     printf("1.) Add a book\n");
     printf("2.) Remove a book\n");
     printf("3.) View all books\n");
     printf("4.) View all borrowers\n");
     printf("5.) Logout\n\n");
+    printf("6.) Show menu again\n\n");
     printf("Enter your choice: ");
-    scanf("%d", &choice);
-
-    switch (choice)
+}
+void LibrarianMenu(int sock)
+{
+    send(sock, "librarian", strlen("librarian"), 0); // send role to server
+    LibraryMenuPrinter();
+    int choice;
+    while (choice != 5)
     {
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
         case 1:
             send(sock, "add", strlen("add"), 0);
             break;
@@ -138,27 +159,42 @@ void LibrarianMenu(int sock){
         case 5:
             send(sock, "logout", strlen("logout"), 0);
             break;
+        case 6:
+            LibraryMenuPrinter();
+            continue;
+        default:
+            printf("Invalid choice\n");
+        }
+
+        // Listen for incoming messages from the server
+        read(sock, message, BUFFER_SIZE);
+        printf("%s\n", message); // server tells if authenticated or not
+        printf("Enter your choice: ");
     }
-
-    // Listen for incoming messages from the server
-    read(sock, message, BUFFER_SIZE);       
-    printf("%s\n", message);    // server tells if authenticated or not
 }
-void AdminMenu(int sock){
-        send(sock, "borrower", strlen("borrower"), 0); // send role to server
-
-    int choice;
+void AdminMenuPrinter()
+{
     printf("----------------Admin Menu----------------\n");
     printf("1.) Add a librarian\n");
     printf("2.) Remove a librarian\n");
     printf("3.) View all librarians\n");
     printf("4.) View all borrowers\n");
     printf("5.) Logout\n\n");
+    printf("6.) Show menu again\n\n");
     printf("Enter your choice: ");
-    scanf("%d", &choice);
-
-    switch (choice)
+}
+void AdminMenu(int sock)
+{
+    send(sock, "admin", strlen("admin"), 0); // send role to server
+    AdminMenuPrinter();
+    int choice;
+    while (choice != 5)
     {
+
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
         case 1:
             send(sock, "addLibrarian", strlen("addLibrarian"), 0);
             break;
@@ -174,15 +210,17 @@ void AdminMenu(int sock){
         case 5:
             send(sock, "logout", strlen("logout"), 0);
             break;
-    }
+        case 6:
+            AdminMenuPrinter();
+            continue;
+        default:
+            printf("Invalid choice\n");
+        }
 
-    // Listen for incoming messages from the server
-    read(sock, message, BUFFER_SIZE);       
-    printf("%s\n", message);    // server tells if authenticated or not
+        // Listen for incoming messages from the server
+        read(sock, message, BUFFER_SIZE);
+        printf("%s\n", message); // server tells if authenticated or not
+        printf("Enter your choice: ");
+    }
 }
 // ------------->>>>> Finished adding by Abhinav  <<<<<<<<<<<<------------
-
-
-
-
-
