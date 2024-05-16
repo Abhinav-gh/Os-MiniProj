@@ -82,7 +82,8 @@ void startServer(int port)
 
 
             // Handle authentication
-            IsAuthenticated =  authHandler(new_socket);
+            IsAuthenticated =  authHandler(new_socket); // Step 1 Authentication. Done
+            funcHandler(new_socket, IsAuthenticated); // Step 2 Give functionality.
 
                    
 

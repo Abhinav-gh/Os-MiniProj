@@ -73,12 +73,13 @@ int loginMenu(int sock) // returns if authenticated or not
 
 // ---------->>>>>>>>>>> Added by Abhinav  <<<<<<<<<<<<----------
 void BorrowerMenu(int sock){
+    send(sock, "borrower", strlen("borrower"), 0); // send role to server
     int choice;
     printf("----------------Borrower Menu----------------\n");
     printf("1.) Borrow a book\n");
     printf("2.) Return a book\n");
-    printf("3.) View borrowed books\n");
-    printf("4.) Pay fine\n");
+    printf("3.) View all books\n");
+    printf("4.) Borrowed books\n");
     printf("5.) Logout\n\n");
     printf("Enter your choice: ");
     scanf("%d", &choice);
@@ -95,7 +96,7 @@ void BorrowerMenu(int sock){
             send(sock, "view", strlen("view"), 0);
             break;
         case 4:
-            send(sock, "pay", strlen("pay"), 0);
+            send(sock, "borrowed", strlen("borrowed"), 0);
             break;
         case 5:
             send(sock, "logout", strlen("logout"), 0);
@@ -103,11 +104,13 @@ void BorrowerMenu(int sock){
     }
 
     // // Listen for incoming messages from the server
-    // read(sock, message, BUFFER_SIZE);       
+    // read(sock, message, BUFFER_SIZE);  
     // printf("%s\n", message);    // server tells if authenticated or not
-    
+
 }
 void LibrarianMenu(int sock){
+        send(sock, "borrower", strlen("borrower"), 0); // send role to server
+
     int choice;
     printf("----------------Librarian Menu----------------\n");
     printf("1.) Add a book\n");
@@ -142,6 +145,8 @@ void LibrarianMenu(int sock){
     printf("%s\n", message);    // server tells if authenticated or not
 }
 void AdminMenu(int sock){
+        send(sock, "borrower", strlen("borrower"), 0); // send role to server
+
     int choice;
     printf("----------------Admin Menu----------------\n");
     printf("1.) Add a librarian\n");
