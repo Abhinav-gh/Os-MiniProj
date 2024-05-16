@@ -76,7 +76,7 @@ void FunctionalityMenu(int role)
 FunctionalityMenuWrapper()
 {
     int role = -1;
-    if (isAuthenticated == 1)
+    if (isAuthenticated)
     {
         read(sock, buffer, BUFFER_SIZE);
         if (strcmp(buffer, "borrower") == 0)
