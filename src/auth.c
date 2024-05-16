@@ -11,85 +11,104 @@
 #include "../header/Admin.h"
 #include "../header/borrower.h"
 
-
 #define BUFFER_SIZE 1024
-
 
 // Function prototypes
 int authHandler(int new_socket);
 User *read_user_data(const char *filename, const char *role);
 int authenticate_user(const char *username, const char *password, const char *role);
-
-
+// User *userArr = (User *)malloc(5 * sizeof(User));
 
 // Function to read user data from file
 User *read_user_data(const char *filename, const char *role)
 {
     FILE *file = fopen(filename, "r");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         perror("Error opening file");
         exit(EXIT_FAILURE);
     }
 
     User *user = (User *)malloc(sizeof(User));
-    if (user == NULL) {
+    if (user == NULL)
+    {
         perror("Error allocating memory");
         exit(EXIT_FAILURE);
     }
-
+    User * userArr = (User *)malloc(MAX_USERS * sizeof(User));
+        if (userArr == NULL)
+        {
+            perror("Error allocating memory for user array");
+            exit(EXIT_FAILURE);
+        }
     char tempUsername[BUFFER_SIZE];
     char tempPassword[BUFFER_SIZE];
 
     // Initialize user to NULL, indicating not found
     user = NULL;
 
-    if (strcmp(role, "borrower") == 0) {
-        while (fscanf(file, "%s %*s %s %*lld %*d %*d %*d %*d", tempUsername, tempPassword) == 2) {
-            if (user == NULL) {
+    if (strcmp(role, "borrower") == 0)
+    {
+        int iteration = 0;
+        
+        while (fscanf(file, "%s %*s %s %*lld %*d %*s %*s %*s %*d %*d %*d ", tempUsername, tempPassword) == 2)
+        {
+            // printf("Iteration %d\n", iteration);
                 user = (User *)malloc(sizeof(User));
-                if (user == NULL) {
+                if (user == NULL)
+                {
                     perror("Error allocating memory");
                     exit(EXIT_FAILURE);
                 }
-            }
             strcpy(user->username, tempUsername);
             strcpy(user->password, tempPassword);
-            break; 
+            userArr[iteration++] = *user;
+            if(feof(file))
+                break;
         }
-    } else {
-        while (fscanf(file, "%s %*s %*s %s", tempUsername, tempPassword) == 2) {
-            if (strstr(tempUsername, role) != NULL) {
-                if (user == NULL) {
+    }
+    else
+    {
+        while (fscanf(file, "%s %*s %*s %s", tempUsername, tempPassword) == 2)
+        {
+            if (strstr(tempUsername, role) != NULL)
+            {
+                if (user == NULL)
+                {
                     user = (User *)malloc(sizeof(User));
-                    if (user == NULL) {
+                    if (user == NULL)
+                    {
                         perror("Error allocating memory");
                         exit(EXIT_FAILURE);
                     }
                 }
                 strcpy(user->username, tempUsername);
                 strcpy(user->password, tempPassword);
-                break; 
+                break;
             }
         }
     }
 
     fclose(file);
-    return user; // Return user found or NULL if not found
+    return userArr; // Return user found or NULL if not found
 }
-
 
 // Function to authenticate user
 int authenticate_user(const char *username, const char *password, const char *role)
 {
     User *user;
-    if(strcmp(role, "admin") == 0){
+    User * userArr;
+    if (strcmp(role, "admin") == 0)
+    {
         user = read_user_data("../database/users/admin.txt", role);
 
         printf("username: %s\n", user->username);
         printf("password: %s\n", user->password);
 
-        if (user != NULL) {
-            if (strcmp(user->username, username) == 0 && strcmp(user->password, password) == 0) {
+        if (user != NULL)
+        {
+            if (strcmp(user->username, username) == 0 && strcmp(user->password, password) == 0)
+            {
                 free(user);
                 return 1; // User authenticated
             }
@@ -97,10 +116,13 @@ int authenticate_user(const char *username, const char *password, const char *ro
         }
     }
 
-    if(strcmp(role, "librarian") == 0){
+    if (strcmp(role, "librarian") == 0)
+    {
         user = read_user_data("../database/users/librarian.txt", role);
-        if (user != NULL) {
-            if (strcmp(user->username, username) == 0 && strcmp(user->password, password) == 0) {
+        if (user != NULL)
+        {
+            if (strcmp(user->username, username) == 0 && strcmp(user->password, password) == 0)
+            {
                 free(user);
                 return 1; // User authenticated
             }
@@ -108,15 +130,23 @@ int authenticate_user(const char *username, const char *password, const char *ro
         }
     }
 
-    if(strcmp(role, "borrower") == 0){
-        user = read_user_data("../database/users/borrower.txt", role);
-        if (user != NULL) {
-            if (strcmp(user->username, username) == 0 && strcmp(user->password, password) == 0) {
-                free(user);
+    if (strcmp(role, "borrower") == 0)
+    {
+        // user = read_user_data("../database/users/borrower.txt", role);
+        userArr=read_user_data("../database/users/borrower.txt", role);
+        // printf("User found and he is %s\n", user->username);
+        // if (user != NULL)
+        for (int i = 0; i < MAX_USERS; i++)
+        {
+            // printf("username: %s\n", userArr[i].username);
+            if (strcmp(userArr[i].username, username) == 0 && strcmp(userArr[i].password, password) == 0)
+            {
+                // free(userArr[i]);
+                
                 return 1; // User authenticated
             }
-            free(user);
         }
+            free(userArr);
     }
 
     return 0; // User not found or authentication failed
@@ -133,33 +163,39 @@ int authHandler(int new_socket)
 
     // Read username
     valread = read(new_socket, buffer, BUFFER_SIZE);
-    buffer[valread] = '\0'; 
-    strncpy(username, buffer, BUFFER_SIZE - 1); 
+    buffer[valread] = '\0';
+    strncpy(username, buffer, BUFFER_SIZE - 1);
 
     // Read password
     valread = read(new_socket, buffer, BUFFER_SIZE);
-    buffer[valread] = '\0'; 
-    strncpy(password, buffer, BUFFER_SIZE - 1); 
+    buffer[valread] = '\0';
+    strncpy(password, buffer, BUFFER_SIZE - 1);
 
     // Read role
     valread = read(new_socket, buffer, BUFFER_SIZE);
     buffer[valread] = '\0';
-    strncpy(role, buffer, BUFFER_SIZE - 1); 
+    strncpy(role, buffer, BUFFER_SIZE - 1);
 
     // Authenticate user
-    if (authenticate_user(username, password, role)) {
+    if (authenticate_user(username, password, role))
+    {
         send(new_socket, "Authenticated", strlen("Authenticated"), 0);
         usleep(1000000);
         // ------->>>>> Addd by abhinav <<<<<-------
-        if(strcmp(role, "borrower") == 0){
+        if (strcmp(role, "borrower") == 0)
+        {
             send(new_socket, "borrower", strlen("borrower"), 0);
-        } else if(strcmp(role, "librarian") == 1){
+        }
+        else if (strcmp(role, "librarian") == 1)
+        {
             send(new_socket, "librarian", strlen("librarian"), 0);
-        } else if(strcmp(role, "admin") == 2){
+        }
+        else if (strcmp(role, "admin") == 2)
+        {
             send(new_socket, "admin", strlen("admin"), 0);
         }
         return 1;
-    } 
+    }
 
     send(new_socket, "Not Authenticated", strlen("Not Authenticated"), 0);
     return 0;
