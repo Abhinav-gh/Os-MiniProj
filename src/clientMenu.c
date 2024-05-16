@@ -8,6 +8,7 @@
 #define BUFFER_SIZE 1024
 #define MAX_NAME_LENGTH 100
 
+
 // Function prototypes
 void loginMenu(int sock);
 void handleLogin(int sock, int choice);
@@ -19,14 +20,25 @@ void send_packet(int sock, MsgPacket *packet);
 
 
 void send_packet(int sock, MsgPacket *packet) {
-    int len = strlen(packet->username) + strlen(packet->role) + (packet->payload ? strlen(packet->payload) : 0) + 3 + sizeof(int);
-    char *buffer = malloc(len + 1); 
+    // Calculate the length of the buffer
+    int len = strlen(packet->username) + strlen(packet->role) + sizeof(int) * 2;
+    for (int i = 0; i < packet->payload_count; ++i) {
+        len += strlen(packet->payload[i]) + 1;
+    }
+
+    char *buffer = malloc(len + 1);
     if (!buffer) {
         perror("Failed to allocate memory for buffer");
         exit(EXIT_FAILURE);
     }
-    sprintf(buffer, "%s|%s|%s|%d", packet->username, packet->role, packet->payload ? packet->payload : "", packet->choice);
-    send(sock, buffer, len + 1, 0); 
+
+    // Construct the message
+    int pos = sprintf(buffer, "%s|%s|%d|%d", packet->username, packet->role, packet->choice, packet->payload_count);
+    for (int i = 0; i < packet->payload_count; ++i) {
+        pos += sprintf(buffer + pos, "|%s", packet->payload[i]);
+    }
+
+    send(sock, buffer, len + 1, 0);
     free(buffer);
 }
 
@@ -88,14 +100,14 @@ void handleLogin(int sock, int choice) {
 
 void handleAuthentication(int sock, const char *username) {
     char message[BUFFER_SIZE];
-    
+
     read(sock, message, BUFFER_SIZE);
 
     if (strcmp(message, "Authenticated") == 0) {
         printf("Login Successful\n");
 
         if (username[0] == 'L') {
-            librarianMenu(sock , username);
+            librarianMenu(sock, username);
         } else if (username[0] == 'A') {
             adminMenu(sock, username);
         } else {
@@ -119,33 +131,45 @@ void borrowerMenu(int sock, const char *username) {
         printf("7.) Check fine\n");
         printf("8.) Change Password\n");
         printf("9.) Update Contact\n");
-        printf("10. Check Due Dates\n");
+        printf("10.) Check Due Dates\n");
         printf("11.) Logout\n");
 
         printf("Enter your choice: ");
         scanf("%d", &choice);
 
-        char payload[MAX_NAME_LENGTH] = {0};
+        const char *payload[1] = {NULL};
 
         if (choice == 3 || choice == 4) {
+            char isbn[MAX_NAME_LENGTH];
             printf("Enter the ISBN of the book: ");
-            scanf("%s", payload);
+            scanf("%s", isbn);
+            payload[0] = strdup(isbn);
         } else if (choice == 8) {
+            char new_password[MAX_NAME_LENGTH];
             printf("Enter your new password: ");
-            scanf("%s", payload);
+            scanf("%s", new_password);
+            payload[0] = strdup(new_password);
         } else if (choice == 9) {
+            char new_contact[MAX_NAME_LENGTH];
             printf("Enter your new contact number: ");
-            scanf("%s", payload);
+            scanf("%s", new_contact);
+            payload[0] = strdup(new_contact);
         }
 
         MsgPacket packet = {
             .username = username,
             .role = "borrower",
             .payload = payload[0] ? payload : NULL,
+            .payload_count = payload[0] ? 1 : 0,
             .choice = choice
         };
 
         send_packet(sock, &packet);
+
+        // Free dynamically allocated payload strings
+        if (payload[0]) {
+            free((void*)payload[0]);
+        }
     }
 }
 
@@ -168,29 +192,39 @@ void librarianMenu(int sock, const char *username) {
         printf("Enter your choice: ");
         scanf("%d", &choice);
 
-        char payload[MAX_NAME_LENGTH] = {0};
+        const char *payload[1] = {NULL};
 
         if (choice == 1) {
+            char title[MAX_NAME_LENGTH];
             printf("Enter the title of the book: ");
-            scanf("%s", payload);
+            scanf("%s", title);
+            payload[0] = strdup(title);
         } else if (choice == 2 || choice == 3) {
+            char isbn[MAX_NAME_LENGTH];
             printf("Enter the ISBN of the book: ");
-            scanf("%s", payload);
+            scanf("%s", isbn);
+            payload[0] = strdup(isbn);
         }
 
         MsgPacket packet = {
             .username = username,
             .role = "librarian",
             .payload = payload[0] ? payload : NULL,
+            .payload_count = payload[0] ? 1 : 0,
             .choice = choice
         };
 
         send_packet(sock, &packet);
+
+        // Free dynamically allocated payload strings
+        if (payload[0]) {
+            free((void*)payload[0]);
+        }
     }
 }
 
 void adminMenu(int sock, const char *username) {
-    while (1) {   
+    while (1) {
         int choice;
 
         printf("----------------Admin Menu----------------\n");
@@ -212,24 +246,34 @@ void adminMenu(int sock, const char *username) {
         printf("Enter your choice: ");
         scanf("%d", &choice);
 
-        char payload[MAX_NAME_LENGTH] = {0};
+        const char *payload[1] = {NULL};
 
         if (choice == 1) {
+            char title[MAX_NAME_LENGTH];
             printf("Enter the title of the book: ");
-            scanf("%s", payload);
+            scanf("%s", title);
+            payload[0] = strdup(title);
         } else if (choice == 2 || choice == 3) {
+            char isbn[MAX_NAME_LENGTH];
             printf("Enter the ISBN of the book: ");
-            scanf("%s", payload);
+            scanf("%s", isbn);
+            payload[0] = strdup(isbn);
         }
 
         MsgPacket packet = {
             .username = username,
             .role = "admin",
             .payload = payload[0] ? payload : NULL,
+            .payload_count = payload[0] ? 1 : 0,
             .choice = choice
         };
 
         send_packet(sock, &packet);
+
+        // Free dynamically allocated payload strings
+        if (payload[0]) {
+            free((void*)payload[0]);
+        }
     }
 }
 

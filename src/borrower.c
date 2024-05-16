@@ -4,11 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUFFER_SIZE 1024
+// #define BUFFER_SIZE 1024
 
 #include "../header/borrower.h"
+#include "../header/server.h"
 #include <stdlib.h>
 #include <string.h>
+
+
 
 
 
@@ -127,11 +130,8 @@ void WriteDatabaseBorrower(struct BSTNodeBorrower *root, const char *filename) {
 }
 
 
-int main()
+// Packet Handler
+void borrowerPacketHandler(int new_socket, MsgPacket *packet)
 {
-    struct BSTNodeBorrower* root = NULL;
-    ReadDatabaseBorrower(&root, "../database/users/borrower.txt");
-    displayAllBorrowers(root);
-    WriteDatabaseBorrower(root, "../database/users/borrower.txt");
-    return 0;
+
 }

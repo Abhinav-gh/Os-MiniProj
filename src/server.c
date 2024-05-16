@@ -23,59 +23,71 @@ void receive_packet(int sock, MsgPacket *packet) {
     buffer[len] = '\0';  // Ensure null-terminated string
 
     // Parse the serialized message
-    packet->username = strtok(buffer, "|");
-    packet->role = strtok(NULL, "|");
-    packet->payload = strtok(NULL, "|");
+    packet->username = strdup(strtok(buffer, "|"));
+    packet->role = strdup(strtok(NULL, "|"));
     packet->choice = atoi(strtok(NULL, "|"));
+    packet->payload_count = atoi(strtok(NULL, "|"));
+
+    // Allocate memory for the payload array
+    packet->payload = malloc(packet->payload_count * sizeof(char *));
+    if (packet->payload == NULL) {
+        perror("Failed to allocate memory for payload");
+        exit(EXIT_FAILURE);
+    }
+
+    // Parse the payload strings
+    for (int i = 0; i < packet->payload_count; i++) {
+        packet->payload[i] = strdup(strtok(NULL, "|"));
+    }
+}
+
+
+void free_packet(MsgPacket *packet) {
+    if (packet->username) {
+        free((void*)packet->username);
+    }
+    if (packet->role) {
+        free((void*)packet->role);
+    }
+    for (int i = 0; i < packet->payload_count; i++) {
+        if (packet->payload[i]) {
+            free((void*)packet->payload[i]);
+        }
+    }
+    if (packet->payload) {
+        free(packet->payload);
+    }
 }
 
 
 
-void startServer(int port) 
-{
-    // server_fd : file descriptor for server socket
-    // new_socket : file descriptor for client socket
-    // valread : number of bytes read from client
+void startServer(int port) {
     int server_fd, new_socket, valread;
 
-    // Address structure for server
     struct sockaddr_in address;
-
-    // Set of socket options 
     int opt = 1;
-
-    // Address length
     int addrlen = sizeof(address);
-
-    // Buffer to store message from client
     char buffer[BUFFER_SIZE] = {0};
 
-
-    // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("socket failed");
         exit(EXIT_FAILURE);
     }
 
-    // Forcefully attaching socket to the port 8080
-    // Set socket options
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
         perror("setsockopt");
         exit(EXIT_FAILURE);
     }
 
-
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PORT);
 
-    // Forcefully attaching socket to the port 8080
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
 
-    // Listen for incoming connections
     if (listen(server_fd, MAX_CLIENTS) < 0) {
         perror("listen");
         exit(EXIT_FAILURE);
@@ -84,9 +96,6 @@ void startServer(int port)
     write(1, "Waiting for the client.....\n", sizeof("Waiting for the client.....\n"));
 
     while (1) {
-
-
-        // Accept the incoming connection
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) {
             perror("accept");
             exit(EXIT_FAILURE);
@@ -97,36 +106,38 @@ void startServer(int port)
         int pid = fork();
 
         if (pid == 0) {
-
             close(server_fd);
 
-
-            // Handle authentication
-            IsAuthenticated =  authHandler(new_socket);
+            IsAuthenticated = authHandler(new_socket);
             MsgPacket packet;
-            while(1)
-            {
+            while (1) {
                 receive_packet(new_socket, &packet);
-                printf("Username: %s\n", packet.username);
-                printf("Role: %s\n", packet.role);
-                printf("Payload: %s\n", packet.payload);
-                printf("Choice: %d\n", packet.choice);
-            }
-            
-                   
+                if(strcmp(packet.role, "borrower") == 0) {
+                    borrowerPacketHandler(new_socket, packet);
+                } else if(strcmp(packet.role, "librarian") == 0) {
+                    librarianPacketHandler(new_socket, packet);
+                } else if(strcmp(packet.role, "admin") == 0) {
+                    adminPacketHandler(new_socket, packet);
+                }
+                
+                // printf("Username: %s\n", packet.username);
+                // printf("Role: %s\n", packet.role);
+                // printf("Choice: %d\n", packet.choice);
+                // printf("Payload count: %d\n", packet.payload_count);
+                // for (int i = 0; i < packet.payload_count; i++) {
+                //     printf("Payload[%d]: %s\n", i, packet.payload[i]);
+                // }
 
-            close(new_socket); 
-            exit(0); 
-        } 
-        
-        else if (pid < 0) {
+                free_packet(&packet);  // Free the packet after processing
+            }
+
+            close(new_socket);
+            exit(0);
+        } else if (pid < 0) {
             perror("fork");
             exit(EXIT_FAILURE);
-        } 
-        
-        else {
-            // Close client socket in parent process
-            close(new_socket); 
+        } else {
+            close(new_socket);
         }
     }
 
@@ -134,8 +145,7 @@ void startServer(int port)
 }
 
 int main() {
-    // Start the server
     startServer(PORT);
-
     return 0;
 }
+

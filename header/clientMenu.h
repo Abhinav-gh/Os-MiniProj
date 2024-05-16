@@ -7,14 +7,13 @@
 #define MAX_NAME_LENGTH 100
 
 
-typedef struct MsgPacket
-{
+typedef struct MsgPacket {
     const char *username;
     const char *role;
-    const char *payload;
+    const char **payload;
+    int payload_count;
     int choice;
 } MsgPacket;
-
 
 
 
