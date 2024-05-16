@@ -64,6 +64,24 @@ void loginMenu(int sock)
 }
 
 
+// Borrower Menu
+void borrowerMenu(int sock)
+{
+    printf("----------------Borrower Menu----------------\n");
+    printf("1.) Show all genres\n");
+    printf("2.) Show all books\n");
+    printf("2.) Borrow a book\n");
+    printf("3.) Return a book\n");
+    printf("4.) Show borrowed books\n");
+    printf("6.) My Details\n");
+    printf("7.) Check fine\n");
+    printf("8.) Change Password\n");
+    printf("9.) Update Contact\n");
+    printf("10. Check Due Dates\n");
+    printf("11.) Logout\n");
+}
+
+
 
 
 

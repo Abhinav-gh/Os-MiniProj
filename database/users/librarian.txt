@@ -1,3 +1,4 @@
-lib1 John lib11@example.com password123
-lib2 Douglas lib22@example.com secure45
-lib3 Scott lib3@example.com pass789
+LIlib1 John lib11@example.com password123 0
+LIlib2 Douglas lib22@example.com secure45 0
+LIlib3 Scott lib3@example.com pass789 0
+LIlib4 Johnny lib4@example.com pass123 0

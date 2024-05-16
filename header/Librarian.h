@@ -12,6 +12,16 @@ typedef struct Librarian {
     char name[MAX_NAME_LENGTH];
     char email[MAX_EMAIL_LENGTH];
     char password[MAX_PASSWORD_LENGTH];
+    int LoginStatus;
 } Librarian;
+
+
+struct BSTNodeLibrarian {
+    struct Librarian data;
+    struct BSTNodeLibrarian* left;
+    struct BSTNodeLibrarian* right;
+};
+
+
 
 #endif 

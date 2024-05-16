@@ -44,7 +44,7 @@ User *read_user_data(const char *filename, const char *role)
     user = NULL;
 
     if (strcmp(role, "borrower") == 0) {
-        while (fscanf(file, "%s %*s %s %*lld %*d %*d %*d %*d", tempUsername, tempPassword) == 2) {
+        while (fscanf(file, "%*d %s %*s %s %*lld %*d %*d %*d %*d", tempUsername, tempPassword) == 2) {
             if (user == NULL) {
                 user = (User *)malloc(sizeof(User));
                 if (user == NULL) {

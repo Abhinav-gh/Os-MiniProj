@@ -4,23 +4,27 @@
 #define MAX_NAME_LENGTH 50
 #define MAX_ID_LENGTH 20
 #define MAX_CONTACT_LENGTH 20
+#define MAX_ISBN_LENGTH 20
+
 
 struct LibraryBook; // Forward declaration of LibraryBook struct
 
 typedef struct Borrower {
+    int ID;
     char username[MAX_NAME_LENGTH];
     char name[MAX_NAME_LENGTH];
     char password[MAX_NAME_LENGTH]; 
     long long int contact;
-    int ID;
-    struct LibraryBook* borrowedBooks[3]; // Now using pointers to LibraryBook
+    char borrowedBooks[MAX_ISBN_LENGTH][MAX_NAME_LENGTH];
     int numBorrowedBooks;
     int fine;
     int isLate;
+    int LoginStatus;
 } Borrower;
 
 // BST node structure
 struct BSTNodeBorrower {
+
     struct Borrower data;
     struct BSTNodeBorrower* left;
     struct BSTNodeBorrower* right;
@@ -28,7 +32,10 @@ struct BSTNodeBorrower {
 
 // Function prototypes
 struct Borrower* createBorrower(const char* username, const char* name, const char* password, long long int contact, int ID);
-
+struct BSTNodeBorrower* createBSTNodeBorrower(struct Borrower* borrower);
+void insertBorrower(struct BSTNodeBorrower** root, struct Borrower borrower);
+void displayBorrowers(struct BSTNodeBorrower* root);
+void ReadDatabase(struct BSTNodeBorrower  **root, const char *filename);
 
 
 #endif /* BORROWER_H */
