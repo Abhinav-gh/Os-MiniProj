@@ -11,6 +11,26 @@
 
 int IsAuthenticated = 0;
 
+
+void receive_packet(int sock, MsgPacket *packet) {
+    char buffer[1024];  // Assuming the buffer is large enough
+    int len = recv(sock, buffer, sizeof(buffer), 0);
+    if (len <= 0) {
+        perror("recv");
+        exit(EXIT_FAILURE);
+    }
+
+    buffer[len] = '\0';  // Ensure null-terminated string
+
+    // Parse the serialized message
+    packet->username = strtok(buffer, "|");
+    packet->role = strtok(NULL, "|");
+    packet->payload = strtok(NULL, "|");
+    packet->choice = atoi(strtok(NULL, "|"));
+}
+
+
+
 void startServer(int port) 
 {
     // server_fd : file descriptor for server socket
@@ -83,7 +103,16 @@ void startServer(int port)
 
             // Handle authentication
             IsAuthenticated =  authHandler(new_socket);
-
+            MsgPacket packet;
+            while(1)
+            {
+                receive_packet(new_socket, &packet);
+                printf("Username: %s\n", packet.username);
+                printf("Role: %s\n", packet.role);
+                printf("Payload: %s\n", packet.payload);
+                printf("Choice: %d\n", packet.choice);
+            }
+            
                    
 
             close(new_socket); 
