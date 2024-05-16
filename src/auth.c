@@ -46,10 +46,10 @@ User *read_user_data(const char *filename, const char *role)
 
     // Initialize user to NULL, indicating not found
     user = NULL;
+    int iteration = 0;
 
     if (strcmp(role, "borrower") == 0)
     {
-        int iteration = 0;
         
         while (fscanf(file, "%s %*s %s %*lld %*d %*s %*s %*s %*d %*d %*d ", tempUsername, tempPassword) == 2)
         {
@@ -71,21 +71,18 @@ User *read_user_data(const char *filename, const char *role)
     {
         while (fscanf(file, "%s %*s %*s %s", tempUsername, tempPassword) == 2)
         {
-            if (strstr(tempUsername, role) != NULL)
-            {
+            // printf("Iteration %d\n", iteration);
+                user = (User *)malloc(sizeof(User));
                 if (user == NULL)
                 {
-                    user = (User *)malloc(sizeof(User));
-                    if (user == NULL)
-                    {
-                        perror("Error allocating memory");
-                        exit(EXIT_FAILURE);
-                    }
+                    perror("Error allocating memory");
+                    exit(EXIT_FAILURE);
                 }
-                strcpy(user->username, tempUsername);
-                strcpy(user->password, tempPassword);
+            strcpy(user->username, tempUsername);
+            strcpy(user->password, tempPassword);
+            userArr[iteration++] = *user;
+            if(feof(file))
                 break;
-            }
         }
     }
 
@@ -100,34 +97,38 @@ int authenticate_user(const char *username, const char *password, const char *ro
     User * userArr;
     if (strcmp(role, "admin") == 0)
     {
-        user = read_user_data("../database/users/admin.txt", role);
+        userArr=read_user_data("../database/users/admin.txt", role);
 
-        printf("username: %s\n", user->username);
-        printf("password: %s\n", user->password);
+        // printf("username: %s\n", user->username);
+        // printf("password: %s\n", user->password);
 
-        if (user != NULL)
+        for (int i = 0; i < MAX_USERS; i++)
         {
-            if (strcmp(user->username, username) == 0 && strcmp(user->password, password) == 0)
+            if (strcmp(userArr[i].username, username) == 0 && strcmp(userArr[i].password, password) == 0)
             {
-                free(user);
+                // free(userArr[i]);
+                
                 return 1; // User authenticated
             }
-            free(user);
+            // free(user);
         }
+        free(userArr);
     }
 
     if (strcmp(role, "librarian") == 0)
     {
-        user = read_user_data("../database/users/librarian.txt", role);
-        if (user != NULL)
+        userArr = read_user_data("../database/users/librarian.txt", role);
+        for (int i = 0; i < MAX_USERS; i++)
         {
-            if (strcmp(user->username, username) == 0 && strcmp(user->password, password) == 0)
+            if (strcmp(userArr[i].username, username) == 0 && strcmp(userArr[i].password, password) == 0)
             {
-                free(user);
+                // free(userArr[i]);
+                
                 return 1; // User authenticated
             }
-            free(user);
+            // free(user);
         }
+        free(userArr);
     }
 
     if (strcmp(role, "borrower") == 0)

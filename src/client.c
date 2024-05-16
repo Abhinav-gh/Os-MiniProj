@@ -80,7 +80,7 @@ FunctionalityMenuWrapper()
     {
         // printf("Authentication successful for :");
         read(sock, buffer, BUFFER_SIZE);
-        // printf(" %s\n", buffer);
+        printf(" %s\n", buffer);
         if (strcmp(buffer, "borrower") == 0)
         {
             role = 0;
