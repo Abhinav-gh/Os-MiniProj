@@ -12,7 +12,7 @@
 char message[BUFFER_SIZE] = {0};
 
 
-void loginMenu(int sock)
+int loginMenu(int sock) // returns if authenticated or not
 {
 
     int choice;
@@ -34,7 +34,7 @@ void loginMenu(int sock)
     scanf("%s", password);
 
     send(sock, username, strlen(username), 0);
-    usleep(100000);
+    usleep(100000); // micro seconds
     send(sock, password, strlen(password), 0);
     usleep(100000);
     
@@ -58,11 +58,123 @@ void loginMenu(int sock)
     }
 
     // Listen for incoming messages from the server
-    read(sock, message, BUFFER_SIZE);
-    printf("%s\n", message);
+    read(sock, message, BUFFER_SIZE);       
+    printf("%s\n", message);    // server tells if authenticated or not
+    if (strcmp(message, "Authenticated") == 0)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 
 }
 
+// ---------->>>>>>>>>>> Added by Abhinav  <<<<<<<<<<<<----------
+void BorrowerMenu(int sock){
+    int choice;
+    printf("----------------Borrower Menu----------------\n");
+    printf("1.) Borrow a book\n");
+    printf("2.) Return a book\n");
+    printf("3.) View borrowed books\n");
+    printf("4.) Pay fine\n");
+    printf("5.) Logout\n\n");
+    printf("Enter your choice: ");
+    scanf("%d", &choice);
+
+    switch (choice)
+    {
+        case 1:
+            send(sock, "borrow", strlen("borrow"), 0);
+            break;
+        case 2:
+            send(sock, "return", strlen("return"), 0);
+            break;
+        case 3:
+            send(sock, "view", strlen("view"), 0);
+            break;
+        case 4:
+            send(sock, "pay", strlen("pay"), 0);
+            break;
+        case 5:
+            send(sock, "logout", strlen("logout"), 0);
+            break;
+    }
+
+    // Listen for incoming messages from the server
+    read(sock, message, BUFFER_SIZE);       
+    printf("%s\n", message);    // server tells if authenticated or not
+}
+void LibrarianMenu(int sock){
+    int choice;
+    printf("----------------Librarian Menu----------------\n");
+    printf("1.) Add a book\n");
+    printf("2.) Remove a book\n");
+    printf("3.) View all books\n");
+    printf("4.) View all borrowers\n");
+    printf("5.) Logout\n\n");
+    printf("Enter your choice: ");
+    scanf("%d", &choice);
+
+    switch (choice)
+    {
+        case 1:
+            send(sock, "add", strlen("add"), 0);
+            break;
+        case 2:
+            send(sock, "remove", strlen("remove"), 0);
+            break;
+        case 3:
+            send(sock, "viewBooks", strlen("viewBooks"), 0);
+            break;
+        case 4:
+            send(sock, "viewBorrowers", strlen("viewBorrowers"), 0);
+            break;
+        case 5:
+            send(sock, "logout", strlen("logout"), 0);
+            break;
+    }
+
+    // Listen for incoming messages from the server
+    read(sock, message, BUFFER_SIZE);       
+    printf("%s\n", message);    // server tells if authenticated or not
+}
+void AdminMenu(int sock){
+    int choice;
+    printf("----------------Admin Menu----------------\n");
+    printf("1.) Add a librarian\n");
+    printf("2.) Remove a librarian\n");
+    printf("3.) View all librarians\n");
+    printf("4.) View all borrowers\n");
+    printf("5.) Logout\n\n");
+    printf("Enter your choice: ");
+    scanf("%d", &choice);
+
+    switch (choice)
+    {
+        case 1:
+            send(sock, "addLibrarian", strlen("addLibrarian"), 0);
+            break;
+        case 2:
+            send(sock, "removeLibrarian", strlen("removeLibrarian"), 0);
+            break;
+        case 3:
+            send(sock, "viewLibrarians", strlen("viewLibrarians"), 0);
+            break;
+        case 4:
+            send(sock, "viewBorrowers", strlen("viewBorrowers"), 0);
+            break;
+        case 5:
+            send(sock, "logout", strlen("logout"), 0);
+            break;
+    }
+
+    // Listen for incoming messages from the server
+    read(sock, message, BUFFER_SIZE);       
+    printf("%s\n", message);    // server tells if authenticated or not
+}
+// ------------->>>>> Finished adding by Abhinav  <<<<<<<<<<<<------------
 
 
 

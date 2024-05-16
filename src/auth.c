@@ -149,6 +149,15 @@ int authHandler(int new_socket)
     // Authenticate user
     if (authenticate_user(username, password, role)) {
         send(new_socket, "Authenticated", strlen("Authenticated"), 0);
+        usleep(1000000);
+        // ------->>>>> Addd by abhinav <<<<<-------
+        if(strcmp(role, "borrower") == 0){
+            send(new_socket, "borrower", strlen("borrower"), 0);
+        } else if(strcmp(role, "librarian") == 1){
+            send(new_socket, "librarian", strlen("librarian"), 0);
+        } else if(strcmp(role, "admin") == 2){
+            send(new_socket, "admin", strlen("admin"), 0);
+        }
         return 1;
     } 
 
