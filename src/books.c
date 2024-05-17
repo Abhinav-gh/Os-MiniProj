@@ -352,18 +352,27 @@ int calculateFine(struct BSTNodeBook *root, struct Borrower *borrower)
     return fine;
 }
 
+// Add fine to the borrower's data
+void addFineToBorrower(struct BSTNodeBook *root, struct Borrower *borrower)
+{
+    int fine = calculateFine(root, borrower);
+    borrower->fine += fine;
+}
+
+// Function to return a book. The return date should be put and the book should be returned Should also check for fine. if fine then return -1
+
+
 // Return a book
-void returnBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN, struct Borrower *borrower)
+int returnBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN, struct Borrower *borrower)
 {
     struct LibraryBook *book = searchBook(root, genreName, ISBN);
     if (book == NULL)
     {
         printf("Book not found\n");
-        return;
+        return 1;
     }
 
-    if (!book->isAvailable)
-    {
+    
         for (int i = 0; i < borrower->numBorrowedBooks; i++)
         {
             if (borrower->borrowedBooks[i] == book)
@@ -372,28 +381,31 @@ void returnBook(struct BSTNodeBook *root, const char *genreName, const char *ISB
                 int fine = calculateFine(root, borrower); // Calculate fine
                 if (fine > 0)
                 {
-                    printf("You have a fine of %d rupees. Please pay before returning the book.\n", fine);
-                    return;
+                    printf("You have a fine of %d rupees. Please pay after returning the book.\n", fine);
+                    // add fine to the borrower
+                    addFineToBorrower(root, borrower);
+                    // return -1;
                 }
                 book->isAvailable = 1;
+                book->numCopies++;
                 book->issueDate = 0;  // Reset issue date
                 book->returnDate = 0; // Reset return date
-                book->borrower = (struct Borrower){0};
-                for (int j = i; j < borrower->numBorrowedBooks - 1; j++)
-                {
-                    borrower->borrowedBooks[j] = borrower->borrowedBooks[j + 1];
-                }
-                borrower->numBorrowedBooks--;
+                // book->borrower = (struct Borrower){0};
+                // for (int j = i; j < borrower->numBorrowedBooks - 1; j++)
+                // {
+                //     borrower->borrowedBooks[j] = borrower->borrowedBooks[j + 1];
+                // }
+                // remove the book from borrower'sborrowedBooks
+                // the books are currently added to this array struct LibraryBook* borrowedBooks[3];. Remove the book from this array
+                borrower->borrowedBooks[i] = NULL;
                 printf("Book returned successfully\n");
-                return;
+                return 0;
             }
         }
         printf("You have not borrowed this book\n");
-    }
-    else
-    {
-        printf("Book is already available\n");
-    }
+        return 2;
+    
+    
 }
 
 // Check if a borrower is late in returning books
@@ -498,6 +510,7 @@ struct BSTNodeBook *root = NULL;
 void initializeBooks()
 {
     ReadDatabaseBooks(&root, "../database/Books/books.txt");
+    printf("Books database initialized\n");
     // displayAllBooks(root);
     writeBSTToFile(root, "../database/Books/books.txt");
 

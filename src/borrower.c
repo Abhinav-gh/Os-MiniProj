@@ -409,11 +409,11 @@ int initializeBorrower()
 {
 
     ReadDatabaseBorrower(&borrowerRoot, "../database/users/borrower.txt");
-
+    printf("Borrower database initialized\n");
     // displayBorrowers(root);
     // char * borrowerInfo = getAllBorrowersInfoWrapper(borrowerRoot);
     // printf("%s\n", borrowerInfo);
-
+    writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
     // freeBSTBorrowers(root);
 
     return 0;

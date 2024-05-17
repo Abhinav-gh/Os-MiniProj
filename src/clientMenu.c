@@ -82,8 +82,9 @@ void BorrowerMenuPrinter()
     printf("2.) Return a book\n");
     printf("3.) View all books\n");
     printf("4.) Search a book\n");
-    printf("5.) Logout\n\n");
-    printf("6.) Show menu again\n\n");
+    printf("5.) Pay fine\n");
+    printf("99.) Logout\n\n");
+    printf("100.) Show menu again\n\n");
     printf("Enter your choice: ");
 }
 void LibraryMenuPrinter()
@@ -158,7 +159,7 @@ void BorrowerMenu(int sock)
 
     int choice;
 
-    while (choice != 5)
+    while (choice != 99)
     {
 
         scanf("%d", &choice);
@@ -182,6 +183,21 @@ void BorrowerMenu(int sock)
             break;
         case 2:
             send(sock, "return", strlen("return"), 0);
+            // take the isbn, genre and username of the borrower
+            printf("Enter the ISBN of the book you want to return: ");
+            char isbnToReturn[100];
+            scanf("%s", isbnToReturn);
+            printf("Enter the genre of the book you want to return: ");
+            char genreToReturn[100];
+            scanf("%s", genreToReturn);
+            // send the isbn, genre and username to server
+            send(sock, isbnToReturn, strlen(isbnToReturn), 0);
+            usleep(100000);
+            send(sock, genreToReturn, strlen(genreToReturn), 0);
+            usleep(100000);
+            send(sock, clientUsername, strlen(clientUsername), 0);
+            usleep(100000);
+
             break;
         case 3:
             send(sock, "view", strlen("view"), 0);
@@ -198,10 +214,63 @@ void BorrowerMenu(int sock)
             send(sock, genre, strlen(genre), 0);
             break;
         case 5:
+            // pay fine. send username and recieve fine from server
+            send(sock, "payFine", strlen("payFine"), 0);
+            //clear message
+            memset(message, 0, sizeof(message));
+            recv(sock, message, BUFFER_SIZE, 0);
+            message[strlen(message)] = '\0';
+            printf("%s.", message);
+            if(strcmp(message, "Fine not calculated. First go to return") == 0)
+            {
+                printf("Fine not calculated. First go to return\n");
+                break;
+            }
+            memset(message, 0, sizeof(message));
+            send(sock, clientUsername, strlen(clientUsername), 0);
+
+            int fine;
+            recv(sock, &fine, sizeof(int), 0);
+            // check if fine is to be paid
+            if (fine != 0)
+            {
+                printf(" Fine to be paid: %d\n", fine);
+                printf("Do you want to pay the fine? (y/n): ");
+                char answer;
+                scanf(" %c", &answer);
+                if (answer == 'y')
+                {
+                    printf("Paying fine...(input amount)\n");
+
+                    // make user pay fine. Verify the same
+                    int userfine;
+                    scanf("%d", &userfine);
+                    if (userfine == fine)
+                    {
+                    }
+                    else if (userfine < fine)
+                    {
+                        printf("Amount paid is less than the fine\n");
+                        send(sock, "Fine not paid", strlen("Fine not paid"), 0);
+                        break;
+                    }
+                    else
+                    {
+                        printf("Amount paid is more. Returning: %d\n", userfine - fine);
+                    }
+                    send(sock, "Fine paid", strlen("Fine paid"), 0);
+                }
+            }
+            else
+            {
+                printf(" No fine to pay\n");
+            }
+            break;
+        case 99:
             send(sock, "logout", strlen("logout"), 0);
             break;
 
-        case 6:
+        case 100:
             BorrowerMenuPrinter();
             continue;
         default:
@@ -209,6 +278,11 @@ void BorrowerMenu(int sock)
         }
         // Listen for incoming messages from the server
         read(sock, message, BUFFER_SIZE);
+        if (choice == 99)
+        {
+            printf("Thank you for using our application.\n Take care!\n");
+            return;
+        }
         printf("%s\n", message); // server tells if authenticated or not
         printf("Enter your choice: ");
     }
