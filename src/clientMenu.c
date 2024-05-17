@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 #include "../header/clientMenu.h"
 
-#define bufferMsg_SIZE 1024
+#define bufferMsg_SIZE 4096
 #define MAX_NAME_LENGTH 100
 
 char bufferMsg[bufferMsg_SIZE] = {0};
@@ -14,10 +14,10 @@ char bufferMsg[bufferMsg_SIZE] = {0};
 // Function prototypes
 void loginMenu(int sock);
 void handleLogin(int sock, int choice);
-void handleAuthentication(int sock, const char *username);
-void borrowerMenu(int sock, const char *username);
-void librarianMenu(int sock, const char *username);
-void adminMenu(int sock, const char *username);
+void handleAuthentication(int sock,  char *username);
+void borrowerMenu(int sock, char *username);
+void librarianMenu(int sock, char *username);
+void adminMenu(int sock, char *username);
 void send_packet(int sock, MsgPacket *packet);
 
 
@@ -102,7 +102,7 @@ void handleLogin(int sock, int choice) {
     handleAuthentication(sock, username);
 }
 
-void handleAuthentication(int sock, const char *username) {
+void handleAuthentication(int sock, char *username) {
     char message[bufferMsg_SIZE];
 
     read(sock, message, bufferMsg_SIZE);
@@ -123,9 +123,16 @@ void handleAuthentication(int sock, const char *username) {
 }
 
 
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
 
-void borrowerMenu(int sock, const char *username) {
-    while (1) {
+
+void borrowerMenu(int sock, char *username) {
+    char bufferMsg[BUFFER_SIZE];
+    
+    while(1) {
         int choice;
         printf("----------------Borrower Menu----------------\n");
         printf("1.) Show all genres\n");
@@ -134,31 +141,38 @@ void borrowerMenu(int sock, const char *username) {
         printf("4.) Return a book\n");
         printf("5.) Show borrowed books\n");
         printf("6.) My Details\n");
-        printf("7.) Check fine\n");
-        printf("8.) Change Password\n");
-        printf("9.) Update Contact\n");
-        printf("10.) Check Due Dates\n");
-        printf("11.) Logout\n");
+        printf("7.) Change Password\n");
+        printf("8.) Update Contact\n");
+        printf("9.) Check Due Dates\n");
+        printf("10.) Logout\n");
 
         printf("Enter your choice: ");
-        scanf("%d", &choice);
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input. Please enter a number.\n");
+            clearInputBuffer();
+            continue;
+        }
+        clearInputBuffer();
 
         const char *payload[1] = {NULL};
 
         if (choice == 3 || choice == 4) {
             char isbn[MAX_NAME_LENGTH];
             printf("Enter the ISBN of the book: ");
-            scanf("%s", isbn);
+            scanf("%99s", isbn); // Limit input to avoid buffer overflow
+            clearInputBuffer();
             payload[0] = strdup(isbn);
-        } else if (choice == 8) {
+        } else if (choice == 7) {
             char new_password[MAX_NAME_LENGTH];
             printf("Enter your new password: ");
-            scanf("%s", new_password);
+            scanf("%99s", new_password); // Limit input to avoid buffer overflow
+            clearInputBuffer();
             payload[0] = strdup(new_password);
-        } else if (choice == 9) {
+        } else if (choice == 8) {
             char new_contact[MAX_NAME_LENGTH];
             printf("Enter your new contact number: ");
-            scanf("%s", new_contact);
+            scanf("%99s", new_contact); // Limit input to avoid buffer overflow
+            clearInputBuffer();
             payload[0] = strdup(new_contact);
         }
 
@@ -171,28 +185,36 @@ void borrowerMenu(int sock, const char *username) {
         };
 
         send_packet(sock, &packet);
-        
-        while (1)
-        {
-            ssize_t bytesRead = read(sock, bufferMsg, bufferMsg_SIZE);
+
+        while (1) {
+            ssize_t bytesRead = read(sock, bufferMsg, BUFFER_SIZE);
             if (bytesRead < 0) {
                 perror("recv");
                 break;
-            } else if (bytesRead == 0) {
-                break;
-            } else if (bufferMsg[0] == '\0') {
+            }
+
+            if (strcmp(bufferMsg, "END_OF_TRANSMISSION") == 0) {
                 break;
             }
-   
-
-            printf("Received genre: %s\n", bufferMsg);
-            memset(bufferMsg, 0, bufferMsg_SIZE);
+           
+            if (strlen(bufferMsg) > 0) {
+                printf("Received book title: %s\n", bufferMsg);
+            }
+            
+            memset(bufferMsg, 0, BUFFER_SIZE);
         }
-
-        // Free dynamically allocated payload strings
+        
         if (payload[0]) {
             free((void*)payload[0]);
         }
+
+        if (choice == 10) {
+            printf("Logging out...\n");
+            break;
+        }
+
+
+        usleep(500000); 
     }
 }
 
@@ -200,9 +222,8 @@ void borrowerMenu(int sock, const char *username) {
 
 
 
-
-void librarianMenu(int sock, const char *username) {
-    while (1) {
+void librarianMenu(int sock, char *username) {
+    // while (1) {
 
         int choice;
 
@@ -268,7 +289,7 @@ void librarianMenu(int sock, const char *username) {
             free((void*)payload[0]);
         }
 
-    }
+    // }
 }
 
 
@@ -276,8 +297,8 @@ void librarianMenu(int sock, const char *username) {
 
 
 
-void adminMenu(int sock, const char *username) {
-    while (1) {
+void adminMenu(int sock, char *username) {
+    // while (1) {
         int choice;
 
         printf("----------------Admin Menu----------------\n");
@@ -345,6 +366,6 @@ void adminMenu(int sock, const char *username) {
         if (payload[0]) {
             free((void*)payload[0]);
         }
-    }
+    // }
 }
 

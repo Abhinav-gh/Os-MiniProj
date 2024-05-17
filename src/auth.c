@@ -10,6 +10,8 @@
 #include "../header/Librarian.h"
 #include "../header/Admin.h"
 #include "../header/borrower.h"
+#include <time.h>
+
 
 #define BUFFER_SIZE 1024
 
@@ -17,7 +19,9 @@
 int authHandler(int new_socket);
 User *read_user_data(const char *filename, const char *role);
 int authenticate_user(const char *username, const char *password, const char *role);
-// User *userArr = (User *)malloc(5 * sizeof(User));
+
+
+
 
 // Function to read user data from file
 User *read_user_data(const char *filename, const char *role)
@@ -44,7 +48,7 @@ User *read_user_data(const char *filename, const char *role)
     char tempUsername[BUFFER_SIZE];
     char tempPassword[BUFFER_SIZE];
 
-    // Initialize user to NULL, indicating not found
+
     user = NULL;
     int iteration = 0;
 
@@ -53,7 +57,6 @@ User *read_user_data(const char *filename, const char *role)
         
         while (fscanf(file, "%*d %s %*s %s %*lld %*d %*d %*d %*d", tempUsername, tempPassword) == 2)
         {
-            // printf("Iteration %d\n", iteration);
                 user = (User *)malloc(sizeof(User));
                 if (user == NULL)
                 {
@@ -71,7 +74,6 @@ User *read_user_data(const char *filename, const char *role)
     {
         while (fscanf(file, "%s %*s %*s %s %*d", tempUsername, tempPassword) == 2)
         {
-            // printf("Iteration %d\n", iteration);
                 user = (User *)malloc(sizeof(User));
                 if (user == NULL)
                 {
@@ -85,9 +87,8 @@ User *read_user_data(const char *filename, const char *role)
                 break;
         }
     }
-
     fclose(file);
-    return userArr; // Return user found or NULL if not found
+    return userArr; 
 }
 
 // Function to authenticate user
@@ -99,18 +100,11 @@ int authenticate_user(const char *username, const char *password, const char *ro
     {
         userArr=read_user_data("../database/users/admin.txt", role);
 
-        // printf("username: %s\n", user->username);
-        // printf("password: %s\n", user->password);
-
         for (int i = 0; i < MAX_USERS; i++)
         {
-            if (strcmp(userArr[i].username, username) == 0 && strcmp(userArr[i].password, password) == 0)
-            {
-                // free(userArr[i]);
-                
-                return 1; // User authenticated
-            }
-            // free(user);
+            if (strcmp(userArr[i].username, username) == 0 && strcmp(userArr[i].password, password) == 0)       
+                return 1; 
+            
         }
         free(userArr);
     }
@@ -121,36 +115,25 @@ int authenticate_user(const char *username, const char *password, const char *ro
         for (int i = 0; i < MAX_USERS; i++)
         {
             if (strcmp(userArr[i].username, username) == 0 && strcmp(userArr[i].password, password) == 0)
-            {
-                // free(userArr[i]);
-                
-                return 1; // User authenticated
-            }
-            // free(user);
+                return 1; // User authenticated 
         }
         free(userArr);
     }
 
+
     if (strcmp(role, "borrower") == 0)
     {
-        // user = read_user_data("../database/users/borrower.txt", role);
         userArr=read_user_data("../database/users/borrower.txt", role);
-        // printf("User found and he is %s\n", user->username);
-        // if (user != NULL)
         for (int i = 0; i < MAX_USERS; i++)
         {
-            // printf("username: %s\n", userArr[i].username);
             if (strcmp(userArr[i].username, username) == 0 && strcmp(userArr[i].password, password) == 0)
-            {
-                // free(userArr[i]);
-                
-                return 1; // User authenticated
-            }
+                return 1; 
+            
         }
             free(userArr);
     }
 
-    return 0; // User not found or authentication failed
+    return 0;
 }
 
 // Function to handle authentication for incoming connections

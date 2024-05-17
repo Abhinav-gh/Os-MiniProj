@@ -24,7 +24,7 @@ struct LibraryBook {
     int yearPublished;
     time_t issueDate;
     time_t returnDate;
-    struct Borrower borrower;
+    char *borrowerUsername;
 };
 
 
@@ -32,7 +32,7 @@ struct LibraryBook {
 struct Genre {
     char name[MAX_GENRE_LENGTH];
     struct LibraryBook books[100]; // Assuming each genre can have at most 100 books
-    int numBooks;
+    int numBooks; // Number of books in the genre
 };
 
 // Structure for a BST node
@@ -45,10 +45,14 @@ struct BSTNodeBook {
 
 void insertBook(struct BSTNodeBook** root, const char* genreName, struct LibraryBook* book);
 struct BSTNodeBook* createBSTNodeBook(struct LibraryBook* book);
-struct LibraryBook* createBook(const char* title, const char* author, const char* ISBN, int numCopies, int isAvailable, int yearPublished, time_t issueDate, time_t returnDate, long int borrowerID);
+struct LibraryBook* createBook(const char* title, const char* author, const char* ISBN, int numCopies, int isAvailable, int yearPublished, time_t issueDate, time_t returnDate, char *username);
 void ReadDatabaseBook(struct BSTNodeBook **root, const char *filename);
 void ReadAllGenres(int socket , struct BSTNodeBook *root , MsgPacket* packet);
-
+void ReadAllBooks(int socket, struct BSTNodeBook *root, MsgPacket *packet);
+int borrowBook(int socket, struct BSTNodeBook *root, const char *ISBN, char *username);
+void FetchBookNameFromISBN(struct BSTNodeBook *root, const char *ISBN, char *bookName);\
+void writeBSTToFileBook(struct BSTNodeBook *root, const char *filename);
+int CheckRemainingTimeForBookReturn(struct BSTNodeBook *root, const char *bookName);
 
 
 #endif /* BST_GENRE_H */

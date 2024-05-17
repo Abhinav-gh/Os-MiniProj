@@ -8,7 +8,7 @@
 
 
 typedef struct MsgPacket {
-    const char *username;
+    char *username;
     const char *role;
     const char **payload;
     int payload_count;

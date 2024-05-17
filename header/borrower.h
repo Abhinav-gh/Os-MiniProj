@@ -4,7 +4,7 @@
 #define MAX_NAME_LENGTH 50
 #define MAX_ID_LENGTH 20
 #define MAX_CONTACT_LENGTH 20
-#define MAX_ISBN_LENGTH 20
+
 
 #include "server.h"
 
@@ -17,7 +17,7 @@ typedef struct Borrower {
     char name[MAX_NAME_LENGTH];
     char password[MAX_NAME_LENGTH]; 
     long long int contact;
-    char borrowedBooks[MAX_ISBN_LENGTH][MAX_NAME_LENGTH];
+    char borrowedBooks[3][MAX_NAME_LENGTH];
     int numBorrowedBooks;
     int fine;
     int isLate;
@@ -33,7 +33,7 @@ struct BSTNodeBorrower {
 };
 
 // Function prototypes
-struct Borrower* createBorrower(const char* username, const char* name, const char* password, long long int contact, int ID);
+struct Borrower* createBorrower( char* username, const char* name, const char* password, long long int contact, int ID);
 struct BSTNodeBorrower* createBSTNodeBorrower(struct Borrower* borrower);
 void insertBorrower(struct BSTNodeBorrower** root, struct Borrower borrower);
 void borrowerPacketHandler(int new_socket, MsgPacket *packet);
