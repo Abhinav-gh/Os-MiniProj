@@ -1,6 +1,6 @@
 #include "../../header/Functionalities/funcHandlerMain.h"
 
-void borrowerFunc(int new_socket, struct Node *root)
+void borrowerFunc(int new_socket, struct BSTNodeBook *root)
 {
     printf("here in src/Functionalities/BorrowFunc.c \n");
 

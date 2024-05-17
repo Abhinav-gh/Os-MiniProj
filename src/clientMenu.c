@@ -81,6 +81,69 @@ void BorrowerMenuPrinter()
     printf("6.) Show menu again\n\n");
     printf("Enter your choice: ");
 }
+void LibraryMenuPrinter()
+{
+    printf("----------------Librarian Menu----------------\n");
+    printf("1.) Add a book\n");
+    printf("2.) Remove a book\n");
+    printf("3.) View all books\n");
+    printf("4.) View all borrowers\n");
+    printf("5.) Logout\n\n");
+    printf("6.) Show menu again\n\n");
+    printf("Enter your choice: ");
+}
+void AdminMenuPrinter()
+{
+    printf("----------------Admin Menu----------------\n");
+    printf("1.) Add a librarian\n");
+    printf("2.) Remove a librarian\n");
+    printf("3.) View all librarians\n");
+    printf("4.) View all borrowers\n");
+    printf("5.) Logout\n\n");
+    printf("6.) Show menu again\n\n");
+    printf("Enter your choice: ");
+}
+
+void AdminMenu(int sock)
+{
+    send(sock, "admin", strlen("admin"), 0); // send role to server
+    AdminMenuPrinter();
+    int choice;
+    while (choice != 5)
+    {
+
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            send(sock, "addLibrarian", strlen("addLibrarian"), 0);
+            break;
+        case 2:
+            send(sock, "removeLibrarian", strlen("removeLibrarian"), 0);
+            break;
+        case 3:
+            send(sock, "viewLibrarians", strlen("viewLibrarians"), 0);
+            break;
+        case 4:
+            send(sock, "viewBorrowers", strlen("viewBorrowers"), 0);
+            break;
+        case 5:
+            send(sock, "logout", strlen("logout"), 0);
+            break;
+        case 6:
+            AdminMenuPrinter();
+            continue;
+        default:
+            printf("Invalid choice\n");
+        }
+
+        // Listen for incoming messages from the server
+        read(sock, message, BUFFER_SIZE);
+        printf("%s\n", message); // server tells if authenticated or not
+        printf("Enter your choice: ");
+    }
+}
 void BorrowerMenu(int sock)
 {
     send(sock, "borrower", strlen("borrower"), 0); // send role to server
@@ -130,17 +193,6 @@ void BorrowerMenu(int sock)
         printf("Enter your choice: ");
     }
 }
-void LibraryMenuPrinter()
-{
-    printf("----------------Librarian Menu----------------\n");
-    printf("1.) Add a book\n");
-    printf("2.) Remove a book\n");
-    printf("3.) View all books\n");
-    printf("4.) View all borrowers\n");
-    printf("5.) Logout\n\n");
-    printf("6.) Show menu again\n\n");
-    printf("Enter your choice: ");
-}
 void LibrarianMenu(int sock)
 {
     send(sock, "librarian", strlen("librarian"), 0); // send role to server
@@ -154,6 +206,61 @@ void LibrarianMenu(int sock)
         {
         case 1:
             send(sock, "add", strlen("add"), 0);
+            // we have to send the book struct to the server. So we should take input and create one
+            //              struct LibraryBook {
+            //      char title[MAX_TITLE_LENGTH];
+            //      char author[MAX_AUTHOR_LENGTH];
+            //      char ISBN[MAX_ISBN_LENGTH];
+            //      int numCopies;
+            //      int isAvailable;
+            //      int yearPublished;
+            //      time_t issueDate;
+            //      time_t returnDate;
+            //      struct Borrower borrower;
+            //  };
+            char title[100];
+            char author[100];
+            char ISBN[100];
+            char genre[100];
+            int numCopies;
+            int isAvailable;
+            int yearPublished;
+            printf("Enter the genre of the book: ");
+            scanf("%s", genre);
+            send(sock, genre, strlen(genre), 0);
+            printf("Enter the title of the book: ");
+            scanf("%s", title);
+            printf("Enter the author of the book: ");
+            scanf("%s", author);
+            printf("Enter the ISBN of the book: ");
+            scanf("%s", ISBN);
+            printf("Enter the number of copies of the book: ");
+            scanf("%d", &numCopies);
+            // printf("Enter the availability of the book: ");//book is available always as we are adding nw book
+            // scanf("%d", &isAvailable);
+            printf("Enter the year of publication of the book: ");
+            scanf("%d", &yearPublished);
+            // now mak a book struct and send it to server
+            // struct LibraryBookPacket bookpacket = (struct LibraryBookPacket *)malloc(sizeof(struct LibraryBookPacket));
+            struct LibraryBookPacket bookpacket;
+
+            strcpy(bookpacket.title, title);
+            strcpy(bookpacket.author, author);
+            strcpy(bookpacket.ISBN, ISBN);
+            bookpacket.numCopies = numCopies;
+            bookpacket.isAvailable = 1;
+            bookpacket.yearPublished = yearPublished;
+
+            // print all the fields of book packet
+            printf("Title: %s\n", bookpacket.title);
+            printf("Author: %s\n", bookpacket.author);
+            printf("ISBN: %s\n", bookpacket.ISBN);
+            printf("Num Copies: %d\n", bookpacket.numCopies);
+            printf("Is Available: %d\n", bookpacket.isAvailable);
+            printf("Year Published: %d\n", bookpacket.yearPublished);
+
+            send(sock, &bookpacket, sizeof(bookpacket), 0);
+
             break;
         case 2:
             send(sock, "remove", strlen("remove"), 0);
@@ -169,57 +276,6 @@ void LibrarianMenu(int sock)
             break;
         case 6:
             LibraryMenuPrinter();
-            continue;
-        default:
-            printf("Invalid choice\n");
-        }
-
-        // Listen for incoming messages from the server
-        read(sock, message, BUFFER_SIZE);
-        printf("%s\n", message); // server tells if authenticated or not
-        printf("Enter your choice: ");
-    }
-}
-void AdminMenuPrinter()
-{
-    printf("----------------Admin Menu----------------\n");
-    printf("1.) Add a librarian\n");
-    printf("2.) Remove a librarian\n");
-    printf("3.) View all librarians\n");
-    printf("4.) View all borrowers\n");
-    printf("5.) Logout\n\n");
-    printf("6.) Show menu again\n\n");
-    printf("Enter your choice: ");
-}
-void AdminMenu(int sock)
-{
-    send(sock, "admin", strlen("admin"), 0); // send role to server
-    AdminMenuPrinter();
-    int choice;
-    while (choice != 5)
-    {
-
-        scanf("%d", &choice);
-
-        switch (choice)
-        {
-        case 1:
-            send(sock, "addLibrarian", strlen("addLibrarian"), 0);
-            break;
-        case 2:
-            send(sock, "removeLibrarian", strlen("removeLibrarian"), 0);
-            break;
-        case 3:
-            send(sock, "viewLibrarians", strlen("viewLibrarians"), 0);
-            break;
-        case 4:
-            send(sock, "viewBorrowers", strlen("viewBorrowers"), 0);
-            break;
-        case 5:
-            send(sock, "logout", strlen("logout"), 0);
-            break;
-        case 6:
-            AdminMenuPrinter();
             continue;
         default:
             printf("Invalid choice\n");

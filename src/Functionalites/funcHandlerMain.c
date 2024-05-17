@@ -24,7 +24,7 @@ void funcHandler(int new_socket){
     }
     else if (strcmp(role, "librarian") == 0)
     {
-        librarianFunc(new_socket);
+        librarianFunc(new_socket,root);
     }
     else if (strcmp(role, "borrower") == 0)
     {

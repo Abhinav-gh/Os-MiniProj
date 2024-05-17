@@ -29,7 +29,7 @@ void addGenre(struct BSTNodeBook **root, const char *genreName)
 
 // Add book to the BST
 void addBook(struct BSTNodeBook **root, const char *genreName, struct LibraryBook *book)
-{
+{   
     if (*root == NULL)
     {
         addGenre(root, genreName);
