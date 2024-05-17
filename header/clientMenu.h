@@ -14,6 +14,7 @@ struct LibraryBookPacket {
     char title[MAX_TITLE_LENGTH];
     char author[MAX_AUTHOR_LENGTH];
     char ISBN[MAX_ISBN_LENGTH];
+
     int numCopies;
     int isAvailable;
     int yearPublished;

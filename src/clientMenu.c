@@ -206,25 +206,12 @@ void LibrarianMenu(int sock)
         {
         case 1:
             send(sock, "add", strlen("add"), 0);
-            // we have to send the book struct to the server. So we should take input and create one
-            //              struct LibraryBook {
-            //      char title[MAX_TITLE_LENGTH];
-            //      char author[MAX_AUTHOR_LENGTH];
-            //      char ISBN[MAX_ISBN_LENGTH];
-            //      int numCopies;
-            //      int isAvailable;
-            //      int yearPublished;
-            //      time_t issueDate;
-            //      time_t returnDate;
-            //      struct Borrower borrower;
-            //  };
+
             char title[100];
             char author[100];
             char ISBN[100];
             char genre[100];
-            int numCopies;
-            int isAvailable;
-            int yearPublished;
+            int numCopies, isAvailable, yearPublished;
             printf("Enter the genre of the book: ");
             scanf("%s", genre);
             send(sock, genre, strlen(genre), 0);
@@ -236,14 +223,11 @@ void LibrarianMenu(int sock)
             scanf("%s", ISBN);
             printf("Enter the number of copies of the book: ");
             scanf("%d", &numCopies);
-            // printf("Enter the availability of the book: ");//book is available always as we are adding nw book
-            // scanf("%d", &isAvailable);
             printf("Enter the year of publication of the book: ");
             scanf("%d", &yearPublished);
             // now mak a book struct and send it to server
-            // struct LibraryBookPacket bookpacket = (struct LibraryBookPacket *)malloc(sizeof(struct LibraryBookPacket));
             struct LibraryBookPacket bookpacket;
-
+            // add data to bookpacket
             strcpy(bookpacket.title, title);
             strcpy(bookpacket.author, author);
             strcpy(bookpacket.ISBN, ISBN);
@@ -259,11 +243,26 @@ void LibrarianMenu(int sock)
             printf("Is Available: %d\n", bookpacket.isAvailable);
             printf("Year Published: %d\n", bookpacket.yearPublished);
 
+            // send the bookpacket to server
             send(sock, &bookpacket, sizeof(bookpacket), 0);
 
             break;
         case 2:
+            // prepare to send a 2d aray of 2 strings, isbn and genre
             send(sock, "remove", strlen("remove"), 0);
+            char arr[2][BUFFER_SIZE] = {0};
+            printf("Enter the ISBN of the book you want to remove: ");
+            scanf("%s", arr[0]);
+            printf("Enter the genre of the book you want to remove: ");
+            scanf("%s", arr[1]);
+            // print arr
+            // printf("arr[0]: %s\n", arr[0]);
+            // printf("arr[1]: %s\n", arr[1]);
+            // send the 2d array to server
+            printf("sending...\n");
+            send(sock,arr[0], strlen(arr[0]), 0);
+            usleep(100000);
+            send(sock,arr[1], strlen(arr[1]), 0);
             break;
         case 3:
             send(sock, "viewBooks", strlen("viewBooks"), 0);

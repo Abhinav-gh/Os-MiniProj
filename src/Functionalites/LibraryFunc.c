@@ -70,6 +70,21 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root)
         else if (strcmp(requestedFunc, "remove") == 0)
         {
             // remove book
+            // first prepare to recieve a single array of 2 strings, isbn and genre
+            char arr[2][BUFFER_SIZE] = {0};
+            int valread = read(new_socket, arr[0], sizeof(arr));
+            // handle error
+            if (valread < 0)
+            {
+                printf("Failed to receive data\n");
+                recv(new_socket, arr[1], sizeof(arr), 0);   //to clear the client send 
+                send(new_socket, "Failed to remove book", strlen("Failed to remove book"), 0);
+            } 
+            valread = read(new_socket, arr[1], sizeof(arr));
+            arr[0][BUFFER_SIZE - 1] = '\0';
+            arr[1][BUFFER_SIZE - 1] = '\0';
+            // now remove the book
+            removeBook(&root, arr[1], arr[0]);
             send(new_socket, "Book removed successfully", strlen("Book removed successfully"), 0);
         }
         else if (strcmp(requestedFunc, "viewBooks") == 0)
