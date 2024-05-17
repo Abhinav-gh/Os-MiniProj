@@ -24,17 +24,7 @@ struct LibraryBookPacket {
     int isAvailable;
     int yearPublished;
 };
-// define BorrowerPackettypedef struct Borrower {
-            //     char username[MAX_NAME_LENGTH];
-            //     char name[MAX_NAME_LENGTH];
-            //     char password[MAX_NAME_LENGTH];
-            //     long long int contact;
-            //     int ID;
-            //     struct LibraryBook* borrowedBooks[3]; // Now using pointers to LibraryBook
-            //     int numBorrowedBooks;
-            //     int fine;
-            //     int isLate;
-            // } Borrower;
+
 struct BorrowerPacket {
     char username[MAX_NAME_LENGTH];
     char name[MAX_NAME_LENGTH];

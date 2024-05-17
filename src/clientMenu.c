@@ -274,20 +274,6 @@ void LibrarianMenu(int sock)
             break;
         case 5:
             send(sock, "addBorrower", strlen("addBorrower"), 0);
-            // now we have to add borrower. For that we need info asdfined by  borrower struct which is
-            //         typedef struct Borrower {
-            //     char username[MAX_NAME_LENGTH];
-            //     char name[MAX_NAME_LENGTH];
-            //     char password[MAX_NAME_LENGTH];
-            //     long long int contact;
-            //     int ID;
-            //     struct LibraryBook* borrowedBooks[3]; // Now using pointers to LibraryBook
-            //     int numBorrowedBooks;
-            //     int fine;
-            //     int isLate;
-            // } Borrower;
-            // so we need to take input for all these fields
-
             printf("Enter the username of the borrower: ");
             char username[100];
             scanf("%s", username);
@@ -330,6 +316,12 @@ void LibrarianMenu(int sock)
             break;
         case 7:
             send(sock, "removeBorrower", strlen("removeBorrower"), 0);
+            // take the username of the borrower to remove
+            printf("Enter the username of the borrower you want to remove: ");
+            char usernameToRemove[100];
+            scanf("%s", usernameToRemove);
+            // send the username to server
+            send(sock, usernameToRemove, strlen(usernameToRemove), 0);
             break;
         case 8:
             send(sock, "logout", strlen("logout"), 0);

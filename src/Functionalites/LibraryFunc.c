@@ -114,6 +114,12 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
         }
         else if (strcmp(requestedFunc, "removeBorrower") == 0)
         {
+            //take the username of the borrower to be removed
+            char username[BUFFER_SIZE] = {0};
+            int valread = read(new_socket, username, BUFFER_SIZE);
+            username[valread] = '\0';
+            // printf("Username: %s\n", username);
+            borrowerRoot=deleteBorrower(borrowerRoot, username);
             send(new_socket, "Borrower removed successfully", strlen("Borrower removed successfully"), 0);
         }
         else if (strcmp(requestedFunc, "logout") == 0)
