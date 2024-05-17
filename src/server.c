@@ -8,11 +8,13 @@
 #include <netinet/in.h>
 #include "../header/server.h"
 #include "../header/auth.h"
+#include "../header/borrower.h"
 
 int IsAuthenticated = 0;
 
 
 void receive_packet(int sock, MsgPacket *packet) {
+    
     char buffer[1024];  // Assuming the buffer is large enough
     int len = recv(sock, buffer, sizeof(buffer), 0);
     if (len <= 0) {
@@ -39,6 +41,7 @@ void receive_packet(int sock, MsgPacket *packet) {
     for (int i = 0; i < packet->payload_count; i++) {
         packet->payload[i] = strdup(strtok(NULL, "|"));
     }
+
 }
 
 
@@ -113,20 +116,15 @@ void startServer(int port) {
             while (1) {
                 receive_packet(new_socket, &packet);
                 if(strcmp(packet.role, "borrower") == 0) {
-                    borrowerPacketHandler(new_socket, packet);
-                } else if(strcmp(packet.role, "librarian") == 0) {
-                    librarianPacketHandler(new_socket, packet);
-                } else if(strcmp(packet.role, "admin") == 0) {
-                    adminPacketHandler(new_socket, packet);
+                    borrowerPacketHandler(new_socket, &packet);
                 }
-                
-                // printf("Username: %s\n", packet.username);
-                // printf("Role: %s\n", packet.role);
-                // printf("Choice: %d\n", packet.choice);
-                // printf("Payload count: %d\n", packet.payload_count);
-                // for (int i = 0; i < packet.payload_count; i++) {
-                //     printf("Payload[%d]: %s\n", i, packet.payload[i]);
+                // } else if(strcmp(packet.role, "librarian") == 0) {
+                //     librarianPacketHandler(new_socket, packet);
+                // } else if(strcmp(packet.role, "admin") == 0) {
+                //     adminPacketHandler(new_socket, packet);
                 // }
+
+
 
                 free_packet(&packet);  // Free the packet after processing
             }

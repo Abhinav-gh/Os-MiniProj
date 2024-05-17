@@ -42,7 +42,13 @@ struct BSTNodeBook {
     struct BSTNodeBook *right;
 };
 
-// Function prototypes
+
+void insertBook(struct BSTNodeBook** root, const char* genreName, struct LibraryBook* book);
+struct BSTNodeBook* createBSTNodeBook(struct LibraryBook* book);
+struct LibraryBook* createBook(const char* title, const char* author, const char* ISBN, int numCopies, int isAvailable, int yearPublished, time_t issueDate, time_t returnDate, long int borrowerID);
+void ReadDatabaseBook(struct BSTNodeBook **root, const char *filename);
+void ReadAllGenres(int socket , struct BSTNodeBook *root , MsgPacket* packet);
+
 
 
 #endif /* BST_GENRE_H */

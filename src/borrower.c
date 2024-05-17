@@ -1,16 +1,11 @@
 #include "../header/borrower.h"
 #include "../header/book.h"
+#include "../header/server.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-// #define BUFFER_SIZE 1024
-
-#include "../header/borrower.h"
-#include "../header/server.h"
 #include <stdlib.h>
 #include <string.h>
-
 
 
 
@@ -66,24 +61,6 @@ void insertBorrower(struct BSTNodeBorrower** root, struct Borrower borrower) {
     }
 }
 
-void displayAllBorrowers(struct BSTNodeBorrower* root) {
-    if (root == NULL) {
-        return;
-    }
-
-    displayAllBorrowers(root->left);
-    printf("Username: %s\n", root->data.username);
-    printf("Name: %s\n", root->data.name);
-    printf("Contact: %lld\n", root->data.contact);
-    printf("ID: %d\n", root->data.ID);
-    printf("Borrowed books: %s %s %s\n", root->data.borrowedBooks[0], root->data.borrowedBooks[1], root->data.borrowedBooks[2]);
-    printf("Number of borrowed books: %d\n", root->data.numBorrowedBooks);
-    printf("Fine: %d\n", root->data.fine);
-    printf("Is late: %d\n", root->data.isLate);
-    printf("Login status: %d\n", root->data.LoginStatus);
-    printf("\n");
-    displayAllBorrowers(root->right);
-}
 
 
 // funtion to read the database from a file
@@ -133,5 +110,15 @@ void WriteDatabaseBorrower(struct BSTNodeBorrower *root, const char *filename) {
 // Packet Handler
 void borrowerPacketHandler(int new_socket, MsgPacket *packet)
 {
+    struct BSTNodeBorrower *rootborrower = NULL;
+    ReadDatabaseBorrower(&rootborrower, "../database/users/borrower.txt");
+
+    struct BSTNodeBook *rootbook = NULL;
+    ReadDatabaseBook(&rootbook, "../database/Books/books.txt");
+
+    if(packet->choice == 1)
+    {
+        ReadAllGenres(new_socket ,rootbook, packet);
+    }
 
 }

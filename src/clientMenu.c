@@ -5,8 +5,10 @@
 #include <sys/socket.h>
 #include "../header/clientMenu.h"
 
-#define BUFFER_SIZE 1024
+#define bufferMsg_SIZE 1024
 #define MAX_NAME_LENGTH 100
+
+char bufferMsg[bufferMsg_SIZE] = {0};
 
 
 // Function prototypes
@@ -20,27 +22,29 @@ void send_packet(int sock, MsgPacket *packet);
 
 
 void send_packet(int sock, MsgPacket *packet) {
-    // Calculate the length of the buffer
     int len = strlen(packet->username) + strlen(packet->role) + sizeof(int) * 2;
     for (int i = 0; i < packet->payload_count; ++i) {
         len += strlen(packet->payload[i]) + 1;
     }
 
-    char *buffer = malloc(len + 1);
-    if (!buffer) {
-        perror("Failed to allocate memory for buffer");
+    char *bufferMsg = malloc(len + 1);
+    if (!bufferMsg) {
+        perror("Failed to allocate memory for bufferMsg");
         exit(EXIT_FAILURE);
     }
 
     // Construct the message
-    int pos = sprintf(buffer, "%s|%s|%d|%d", packet->username, packet->role, packet->choice, packet->payload_count);
+    int pos = sprintf(bufferMsg, "%s|%s|%d|%d", packet->username, packet->role, packet->choice, packet->payload_count);
     for (int i = 0; i < packet->payload_count; ++i) {
-        pos += sprintf(buffer + pos, "|%s", packet->payload[i]);
+        pos += sprintf(bufferMsg + pos, "|%s", packet->payload[i]);
     }
 
-    send(sock, buffer, len + 1, 0);
-    free(buffer);
+    send(sock, bufferMsg, len + 1, 0);
+    free(bufferMsg);
 }
+
+
+
 
 void loginMenu(int sock) {
     int choice;
@@ -99,9 +103,9 @@ void handleLogin(int sock, int choice) {
 }
 
 void handleAuthentication(int sock, const char *username) {
-    char message[BUFFER_SIZE];
+    char message[bufferMsg_SIZE];
 
-    read(sock, message, BUFFER_SIZE);
+    read(sock, message, bufferMsg_SIZE);
 
     if (strcmp(message, "Authenticated") == 0) {
         printf("Login Successful\n");
@@ -117,6 +121,8 @@ void handleAuthentication(int sock, const char *username) {
         printf("Login Failed\n");
     }
 }
+
+
 
 void borrowerMenu(int sock, const char *username) {
     while (1) {
@@ -165,6 +171,23 @@ void borrowerMenu(int sock, const char *username) {
         };
 
         send_packet(sock, &packet);
+        
+        while (1)
+        {
+            ssize_t bytesRead = read(sock, bufferMsg, bufferMsg_SIZE);
+            if (bytesRead < 0) {
+                perror("recv");
+                break;
+            } else if (bytesRead == 0) {
+                break;
+            } else if (bufferMsg[0] == '\0') {
+                break;
+            }
+   
+
+            printf("Received genre: %s\n", bufferMsg);
+            memset(bufferMsg, 0, bufferMsg_SIZE);
+        }
 
         // Free dynamically allocated payload strings
         if (payload[0]) {
@@ -173,8 +196,14 @@ void borrowerMenu(int sock, const char *username) {
     }
 }
 
+
+
+
+
+
 void librarianMenu(int sock, const char *username) {
     while (1) {
+
         int choice;
 
         printf("----------------Librarian Menu----------------\n");
@@ -216,12 +245,36 @@ void librarianMenu(int sock, const char *username) {
 
         send_packet(sock, &packet);
 
+        while(1)
+        {
+            ssize_t bytesRead = read(sock, bufferMsg, bufferMsg_SIZE);
+            if (bytesRead < 0) {
+                perror("recv");
+                break;
+            } else if (bytesRead == 0) {
+                // Connection closed by server
+                break;
+            } else if (bufferMsg[0] == '\0') {
+                // End of transmission indicator
+                break;
+            }
+
+            printf("Received genre: %s\n", bufferMsg);
+            memset(bufferMsg, 0, bufferMsg_SIZE);
+        }
+
         // Free dynamically allocated payload strings
         if (payload[0]) {
             free((void*)payload[0]);
         }
+
     }
 }
+
+
+
+
+
 
 void adminMenu(int sock, const char *username) {
     while (1) {
@@ -269,6 +322,24 @@ void adminMenu(int sock, const char *username) {
         };
 
         send_packet(sock, &packet);
+
+        while(1)
+        {
+            ssize_t bytesRead = read(sock, bufferMsg, bufferMsg_SIZE);
+            if (bytesRead < 0) {
+                perror("recv");
+                break;
+            } else if (bytesRead == 0) {
+                // Connection closed by server
+                break;
+            } else if (bufferMsg[0] == '\0') {
+                // End of transmission indicator
+                break;
+            }
+
+            printf("Received genre: %s\n", bufferMsg);
+            memset(bufferMsg, 0, bufferMsg_SIZE);
+        }
 
         // Free dynamically allocated payload strings
         if (payload[0]) {

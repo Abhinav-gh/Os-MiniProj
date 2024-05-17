@@ -6,7 +6,34 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <time.h>
 
+
+
+void ReadAllGenres(int socket, struct BSTNodeBook *root, MsgPacket *packet) {
+    
+    if (root == NULL)
+        return;
+
+    printf("Genre: %s\n", root->genre.name);
+
+    // Send the genre name
+    if (send(socket, root->genre.name, strlen(root->genre.name) + 1, 0) == -1) { // +1 to include the null terminator
+        perror("send");
+        return;
+    }
+
+    // Traverse the left subtree
+    ReadAllGenres(socket, root->left, packet);
+
+    // Traverse the right subtree
+    ReadAllGenres(socket, root->right, packet);
+}
 
 
 // Function to create a new book
@@ -159,12 +186,3 @@ void writeBSTToFileBook(struct BSTNodeBook *root, const char *filename) {
 }
 
 
-
-int main(){
-    struct BSTNodeBook *root = NULL;
-    ReadDatabaseBook(&root, "../database/Books/books.txt");
-    displayAllBooks(root);
-    writeBSTToFileBook(root, "../database/Books/books.txt");
- 
-    return 0;
-}

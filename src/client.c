@@ -3,9 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <pthread.h> // Include pthread library for threading
+#include <pthread.h>
+#include <signal.h>
 #include "../header/client.h"
 #include "../header/clientMenu.h"
 
@@ -14,24 +13,28 @@
 pthread_mutex_t mutex;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
-
 // Global variables
 char buffer[BUFFER_SIZE] = {0};
 int sock = 0;
+volatile sig_atomic_t timeout_flag = 0; // Timeout flag
 
 // Function prototypes
 void connectToServer(const char *server_ip);
 void loginMenuWrapper();
-
+void handleTimeout(int sig);
 
 // Function to execute loginMenu with mutex protection
 void loginMenuWrapper() {
-    pthread_mutex_lock(&mutex); 
+    pthread_mutex_lock(&mutex);
     loginMenu(sock);
-    pthread_mutex_unlock(&mutex); 
+    pthread_mutex_unlock(&mutex);
 }
 
-
+// Function to handle timeout signal
+void handleTimeout(int sig) {
+    timeout_flag = 1; // Set the timeout flag
+    printf("Timeout occurred. Exiting the loop.\n");
+}
 
 void connectToServer(const char *server_ip) {
     struct sockaddr_in serv_addr;
@@ -54,20 +57,18 @@ void connectToServer(const char *server_ip) {
         exit(EXIT_FAILURE);
     }
 
-    read (sock, buffer, BUFFER_SIZE); 
+    read(sock, buffer, BUFFER_SIZE);
     printf("%s\n", buffer);
-    memset(buffer, 0, BUFFER_SIZE);    
+    memset(buffer, 0, BUFFER_SIZE);
 
-    loginMenuWrapper(); // Call loginMenu through the wrapper function
+    loginMenuWrapper();
+
 }
 
-
-
 int main() {
-
-    pthread_mutex_init(&mutex, NULL); // Initialize the mutex
+    pthread_mutex_init(&mutex, NULL);
     connectToServer(SERVER_IP);
-    pthread_mutex_destroy(&mutex); // Destroy the mutex before exiting
+    pthread_mutex_destroy(&mutex);
 
     return 0;
 }

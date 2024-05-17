@@ -6,6 +6,8 @@
 #define MAX_CONTACT_LENGTH 20
 #define MAX_ISBN_LENGTH 20
 
+#include "server.h"
+
 
 struct LibraryBook; // Forward declaration of LibraryBook struct
 
@@ -34,8 +36,9 @@ struct BSTNodeBorrower {
 struct Borrower* createBorrower(const char* username, const char* name, const char* password, long long int contact, int ID);
 struct BSTNodeBorrower* createBSTNodeBorrower(struct Borrower* borrower);
 void insertBorrower(struct BSTNodeBorrower** root, struct Borrower borrower);
-void displayBorrowers(struct BSTNodeBorrower* root);
-void ReadDatabase(struct BSTNodeBorrower  **root, const char *filename);
+void borrowerPacketHandler(int new_socket, MsgPacket *packet);
+void ReadDatabaseBorrower(struct BSTNodeBorrower  **root, const char *filename);
+
 
 
 #endif /* BORROWER_H */

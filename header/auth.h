@@ -16,6 +16,10 @@ typedef struct {
 int authHandler(int new_socket);
 User *read_user_data(const char *filename, const char *role);
 int authenticate_user(const char *username, const char *password, const char *role);
+void free_user(User *user);
+void free_users(User *users, int num_users);
+void send_auth_response(int new_socket, int status);
+
 
 
 #endif /* AUTH_H */
