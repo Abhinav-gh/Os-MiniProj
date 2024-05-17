@@ -38,7 +38,13 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
             // serach for the borrower and make the borrwer object
             struct Borrower *borrower = getBorrowerData(borrowerRoot, username);
             // use this borrower now
-            //  void borrowBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN, struct Borrower *borrower)
+
+            // check if the borrower has fine to pay. If yes then return
+            if (borrower -> fine > 0)
+            {
+                send(new_socket, "You have fine to pay. Please pay the fine first", strlen("You have fine to pay. Please pay the fine first"), 0);
+                return;
+            }
             if (borrowBook(root, genre, isbn, borrower) == 0)
             {
                 // update the file

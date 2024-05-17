@@ -179,7 +179,6 @@ void BorrowerMenu(int sock)
             send(sock, genreToBorrow, strlen(genreToBorrow), 0);
             usleep(100000);
             send(sock, clientUsername, strlen(clientUsername), 0);
-            usleep(100000);
             break;
         case 2:
             send(sock, "return", strlen("return"), 0);
