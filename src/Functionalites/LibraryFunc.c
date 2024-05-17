@@ -1,6 +1,6 @@
 #include "../../header/Functionalities/funcHandlerMain.h"
 
-void librarianFunc(int new_socket, struct BSTNodeBook *root)
+void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorrower *borrowerRoot)
 {
     printf("here in src/Functionalities/LibraryFunc.c \n");
 
@@ -39,15 +39,14 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root)
             if (valread > 0)
             {
                 addBook(&root, genre, &newBook);
-            writeBSTToFile(root, "../database/Books/books.txt");
-            send(new_socket, "Book added successfully", strlen("Book added successfully"), 0);
+                writeBSTToFile(root, "../database/Books/books.txt");
+                send(new_socket, "Book added successfully", strlen("Book added successfully"), 0);
             }
             else
             {
                 printf("Failed to receive data\n");
                 send(new_socket, "Failed to add book", strlen("Failed to add book"), 0);
             }
-            
         }
         else if (strcmp(requestedFunc, "remove") == 0)
         {
@@ -58,14 +57,16 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root)
             if (valread < 0)
             {
                 printf("Failed to receive data\n");
-                recv(new_socket, arr[1], sizeof(arr), 0);   //to clear the client send 
+                recv(new_socket, arr[1], sizeof(arr), 0); // to clear the client send
                 send(new_socket, "Failed to remove book", strlen("Failed to remove book"), 0);
-            } 
+            }
             valread = read(new_socket, arr[1], sizeof(arr));
             arr[0][BUFFER_SIZE - 1] = '\0';
             arr[1][BUFFER_SIZE - 1] = '\0';
             // now remove the book
             removeBook(&root, arr[1], arr[0]);
+            writeBSTToFile(root, "../database/Books/books.txt");
+            // printf("Book removed\n");
             send(new_socket, "Book removed successfully", strlen("Book removed successfully"), 0);
         }
         else if (strcmp(requestedFunc, "viewBooks") == 0)
@@ -77,13 +78,20 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root)
         }
         else if (strcmp(requestedFunc, "viewBorrowers") == 0)
         {
-            // view all books
-            send(new_socket, "Borrowers viewed", strlen("Borrowers viewed"), 0);
+            // view all borrowers
+            // printf("Viewing all borrowers\n");
+            char *borrowersInfo = getAllBorrowersInfoWrapper(borrowerRoot);
+            // printf("Borrowers Info: %s\n", borrowersInfo);
+            send(new_socket, borrowersInfo, strlen(borrowersInfo), 0);
+            free(borrowersInfo);
         }
-        else if(strcmp(requestedFunc, "addBorrower") == 0){
+
+        else if (strcmp(requestedFunc, "addBorrower") == 0)
+        {
             send(new_socket, "Borrower added successfully", strlen("Borrower added successfully"), 0);
         }
-        else if(strcmp(requestedFunc, "removeBorrower") == 0){
+        else if (strcmp(requestedFunc, "removeBorrower") == 0)
+        {
             send(new_socket, "Borrower removed successfully", strlen("Borrower removed successfully"), 0);
         }
         else if (strcmp(requestedFunc, "logout") == 0)

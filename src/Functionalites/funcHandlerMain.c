@@ -1,5 +1,6 @@
 #include "../../header/Functionalities/funcHandlerMain.h"
 #include "../books.c"
+#include "../borrower.c"
 #include "./BorrowFunc.c"
 #include "./AdminFunc.c"
 #include "./LibraryFunc.c"
@@ -7,6 +8,7 @@
 
 void funcHandler(int new_socket){
     initializeBooks();
+    initializeBorrower();
     char role[BUFFER_SIZE] = {0};
     char buffer[BUFFER_SIZE] = {0};
     // read the role coming from the client
@@ -24,7 +26,7 @@ void funcHandler(int new_socket){
     }
     else if (strcmp(role, "librarian") == 0)
     {
-        librarianFunc(new_socket,root);
+        librarianFunc(new_socket,root,borrowerRoot);
     }
     else if (strcmp(role, "borrower") == 0)
     {

@@ -1,7 +1,6 @@
 Fiction ToKillAMockingBird HarperLee 9780061120084 3 1 1960 0 0 0
 Fiction 1984 GeorgeOrwell 9780451524935 5 1 1949 0 0 0
 Fiction BraveNewWorld AldousHuxley 9780060850524 2 1 1932 0 0 0
-Fiction pillu pillu 12345678 10 1 2000 1715929042 0 0
 Non-Fiction Sapiens:ABriefHistoryofHumankind YuvalNoahHarari 9780062316097 4 1 2014 0 0 1
 Non-Fiction TheSelfishGene RichardDawkins 9780199291151 1 1 1976 0 0 1
 Non-Fiction ABriefHistoryOfTime StephenHawking 9780553380163 3 1 1988 0 0 1

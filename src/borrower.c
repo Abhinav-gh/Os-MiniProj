@@ -182,6 +182,41 @@ void displayBorrowers(struct BSTNodeBorrower *root)
     displayBorrowers(root->right);
 }
 
+char *getAllBorrowersInfoWrapper(struct BSTNodeBorrower *root)
+{
+    // Allocate memory for the string to store all borrower information
+    char *borrowersInfo = (char *)malloc(2 * BUFFER_SIZE * sizeof(char));
+    if (borrowersInfo == NULL)
+    {
+        perror("Error allocating memory");
+        exit(EXIT_FAILURE);
+    }
+    // Initialize the string
+    strcpy(borrowersInfo, "");
+    // printf("coming hre\n");
+    getAllBorrowersInfo(root, borrowersInfo);
+    // printf("borrowersInfo: %s\n", borrowersInfo);
+    return borrowersInfo;
+}
+
+void getAllBorrowersInfo(struct BSTNodeBorrower *root, char *borrowersInfo)
+{
+    if (root == NULL)
+    {
+        return;
+    }
+
+    getAllBorrowersInfo(root->left, borrowersInfo);
+
+    // Concatenate borrower information to the string
+    sprintf(borrowersInfo + strlen(borrowersInfo), "Username: %s\n", root->data.username);
+    sprintf(borrowersInfo + strlen(borrowersInfo), "Name: %s\n", root->data.name);
+    sprintf(borrowersInfo + strlen(borrowersInfo), "Contact: %lld\n", root->data.contact);
+    sprintf(borrowersInfo + strlen(borrowersInfo), "ID: %d\n", root->data.ID);
+    sprintf(borrowersInfo + strlen(borrowersInfo), "\n");
+
+    getAllBorrowersInfo(root->right, borrowersInfo);
+}
 // Function to search for a borrower in the BST
 struct BSTNodeBorrower *searchBorrower(struct BSTNodeBorrower *root, const char *username)
 {
@@ -264,7 +299,7 @@ void freeBSTBorrowers(struct BSTNodeBorrower *root)
 
 // Function to read borrower data from a file and insert into BST
 // Function to read borrower data from a file and insert into BST
-void ReadDatabase(struct BSTNodeBorrower **root, const char *filename)
+void ReadDatabaseBorrower(struct BSTNodeBorrower **root, const char *filename)
 {
     FILE *file = fopen(filename, "r");
     if (file == NULL)
@@ -316,13 +351,15 @@ void ReadDatabase(struct BSTNodeBorrower **root, const char *filename)
     fclose(file);
 }
 
+struct BSTNodeBorrower *borrowerRoot = NULL;
 int initializeBorrower()
 {
-    struct BSTNodeBorrower *root = NULL;
 
-    ReadDatabase(&root, "../database/users/borrower.txt");
+    ReadDatabaseBorrower(&borrowerRoot, "../database/users/borrower.txt");
 
     // displayBorrowers(root);
+    // char * borrowerInfo = getAllBorrowersInfoWrapper(borrowerRoot);
+    // printf("%s\n", borrowerInfo);
 
     // freeBSTBorrowers(root);
 

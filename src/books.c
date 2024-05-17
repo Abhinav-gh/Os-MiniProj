@@ -423,7 +423,7 @@ void displayAllGenres(struct BSTNodeBook *root)
 }
 
 // Helper function to read a string enclosed in double quotes
-void ReadDatabase(struct BSTNodeBook **root, const char *filename)
+void ReadDatabaseBooks(struct BSTNodeBook **root, const char *filename)
 {
     FILE *file = fopen(filename, "r");
     if (file == NULL)
@@ -495,7 +495,7 @@ struct BSTNodeBook *root = NULL;
 
 void initializeBooks()
 {
-    ReadDatabase(&root, "../database/Books/books.txt");
+    ReadDatabaseBooks(&root, "../database/Books/books.txt");
     // displayAllBooks(root);
     writeBSTToFile(root, "../database/Books/books.txt");
 
