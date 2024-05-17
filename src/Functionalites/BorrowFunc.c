@@ -1,6 +1,5 @@
 #include "../../header/Functionalities/funcHandlerMain.h"
 
-int isfineCalculated = 0;
 void borrowerFunc(int new_socket, struct BSTNodeBook *root)
 {
     printf("here in src/Functionalities/BorrowFunc.c \n");
@@ -40,21 +39,37 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
             // use this borrower now
 
             // check if the borrower has fine to pay. If yes then return
-            if (borrower -> fine > 0)
+            if (borrower->fine > 0)
             {
                 send(new_socket, "You have fine to pay. Please pay the fine first", strlen("You have fine to pay. Please pay the fine first"), 0);
-                return;
-            }
-            if (borrowBook(root, genre, isbn, borrower) == 0)
-            {
-                // update the file
-                writeBSTToFile(root, "../database/Books/books.txt");
-                writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
-                send(new_socket, "Book borrowed successfully", strlen("Book borrowed successfully"), 0);
             }
             else
             {
-                send(new_socket, "Maximum limit(3) reached", strlen("Maximum limit(3) reached"), 0);
+                int result = borrowBook(root, genre, isbn, borrower);
+
+                if (result == 0)
+                {
+                    // update the file
+                    writeBSTToFile(root, "../database/Books/books.txt");
+                    writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
+                    send(new_socket, "Book borrowed successfully", strlen("Book borrowed successfully"), 0);
+                }
+                else if (result == -1)
+                {
+                    send(new_socket, "Book not found", strlen("Book not found"), 0);
+                }
+                else if (result == -2)
+                {
+                    send(new_socket, "No copies available", strlen("No copies available"), 0);
+                }
+                else if (result == -3)
+                {
+                    send(new_socket, "Book not available", strlen("Book not available"), 0);
+                }
+                else if (result == 1)
+                {
+                    send(new_socket, "Maximum limit(3) reached", strlen("Maximum limit(3) reached"), 0);
+                }
             }
         }
         else if (strcmp(requestedFunc, "return") == 0)
@@ -82,7 +97,6 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
             // use this borrower now
             //  void returnBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN, struct Borrower *borrower)
             int isreturned = returnBook(root, genre, isbn, borrower);
-            isfineCalculated = 1;   
             if (isreturned == 1)
             {
                 send(new_socket, "Book not found", strlen("Book not found"), 0);
@@ -140,6 +154,8 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
         }
         else if (strcmp(requestedFunc, "payFine") == 0)
         {
+            int isfineCalculated = 0;
+            read(new_socket, &isfineCalculated, sizeof(int));
             if (isfineCalculated == 0)
             {
                 send(new_socket, "Fine not calculated. First go to return", strlen("Fine not calculated. First go to return"), 0);
@@ -164,13 +180,13 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
                 printf("Fine is %d\n", fine);
                 if (fine == 0)
                 {
-                    int fine_zero=0;
+                    int fine_zero = 0;
                     send(new_socket, &fine_zero, sizeof(int), 0);
                 }
                 else
                 {
                     send(new_socket, &fine, sizeof(int), 0);
-                    // wait for confirmation string. 
+                    // wait for confirmation string.
                     char confirmation[BUFFER_SIZE] = {0};
                     valread = read(new_socket, confirmation, BUFFER_SIZE);
                     confirmation[valread] = '\0';

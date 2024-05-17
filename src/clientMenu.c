@@ -12,6 +12,7 @@
 char clientUsername[BUFFER_SIZE] = {0};
 char clientPassword[BUFFER_SIZE] = {0};
 char message[BUFFER_SIZE] = {0};
+int isfineCalculated = 0;
 
 int loginMenu(int sock) // returns if authenticated or not
 {
@@ -196,7 +197,7 @@ void BorrowerMenu(int sock)
             usleep(100000);
             send(sock, clientUsername, strlen(clientUsername), 0);
             usleep(100000);
-
+isfineCalculated=1;
             break;
         case 3:
             send(sock, "view", strlen("view"), 0);
@@ -215,6 +216,8 @@ void BorrowerMenu(int sock)
         case 5:
             // pay fine. send username and recieve fine from server
             send(sock, "payFine", strlen("payFine"), 0);
+            usleep(100000); 
+            send(sock,&isfineCalculated, sizeof(int), 0);
             //clear message
             memset(message, 0, sizeof(message));
             recv(sock, message, BUFFER_SIZE, 0);

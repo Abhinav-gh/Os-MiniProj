@@ -281,7 +281,7 @@ int borrowBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN
     if (book == NULL)
     {
         printf("Book not found\n");
-        return;
+        return -1;
     }
 
     if (book->isAvailable)
@@ -310,11 +310,13 @@ int borrowBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN
         else
         {
             printf("No copies available for borrowing\n");
+            return -2;
         }
     }
     else
     {
         printf("Book is not available\n");
+        return -3;
     }
 }
 
