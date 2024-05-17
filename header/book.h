@@ -5,7 +5,7 @@
 #define MAX_TITLE_LENGTH 100
 #define MAX_AUTHOR_LENGTH 50
 #define MAX_ISBN_LENGTH 20
-
+#define BUFFER_SIZE 2048
 #include <time.h>
 #include "borrower.h"
 

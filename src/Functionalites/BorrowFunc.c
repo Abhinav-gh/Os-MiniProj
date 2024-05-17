@@ -52,10 +52,10 @@ void borrowerFunc(int new_socket, struct Node *root)
             }
             else
             {
-                printf("book found\n");
-                char *bookInfo;
-                getBookInfo(searchedBook, &bookInfo);
-                printf("Book Info: %s\n", bookInfo);
+                // printf("book found\n");
+                char *bookInfo = (char *)malloc(2 * BUFFER_SIZE * sizeof(char));
+                getBookInfo(searchedBook, bookInfo);
+                // printf("Book Info: %s\n", bookInfo);
                 send(new_socket, bookInfo, strlen(bookInfo), 0);
             }
             // send(new_socket, "searched", strlen("searched"), 0);
