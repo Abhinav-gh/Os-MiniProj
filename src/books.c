@@ -493,7 +493,7 @@ void writeBSTToFile(struct BSTNodeBook *root, const char *filename)
 
 struct BSTNodeBook *root = NULL;
 
-void initialize()
+void initializeBooks()
 {
     ReadDatabase(&root, "../database/Books/books.txt");
     // displayAllBooks(root);

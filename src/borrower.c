@@ -12,11 +12,12 @@
 
 // Function prototypes
 
-
 // Function to create a new Borrower
-struct Borrower* createBorrower(const char* username, const char* name, const char* password, long long int contact, int ID) {
-    struct Borrower* newBorrower = (struct Borrower*)malloc(sizeof(struct Borrower));
-    if (newBorrower == NULL) {
+struct Borrower *createBorrower(const char *username, const char *name, const char *password, long long int contact, int ID)
+{
+    struct Borrower *newBorrower = (struct Borrower *)malloc(sizeof(struct Borrower));
+    if (newBorrower == NULL)
+    {
         // Memory allocation failed
         return NULL;
     }
@@ -37,7 +38,8 @@ struct Borrower* createBorrower(const char* username, const char* name, const ch
     newBorrower->isLate = 0;
 
     // Initialize borrowedBooks array to NULL pointers
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++)
+    {
         newBorrower->borrowedBooks[i] = NULL;
     }
 
@@ -45,12 +47,15 @@ struct Borrower* createBorrower(const char* username, const char* name, const ch
 }
 
 // Function to add a borrowed book to a borrower
-int addBorrowedBook(struct Borrower* borrower, struct LibraryBook* book) {
-    if (borrower == NULL || book == NULL) {
+int addBorrowedBook(struct Borrower *borrower, struct LibraryBook *book)
+{
+    if (borrower == NULL || book == NULL)
+    {
         return 0; // Invalid borrower or book
     }
 
-    if (borrower->numBorrowedBooks >= 3) {
+    if (borrower->numBorrowedBooks >= 3)
+    {
         return -1; // Borrower already has maximum number of borrowed books
     }
 
@@ -59,27 +64,34 @@ int addBorrowedBook(struct Borrower* borrower, struct LibraryBook* book) {
 }
 
 // Function to remove a borrowed book from a borrower
-int removeBorrowedBook(struct Borrower* borrower, struct LibraryBook* book) {
-    if (borrower == NULL || book == NULL) {
+int removeBorrowedBook(struct Borrower *borrower, struct LibraryBook *book)
+{
+    if (borrower == NULL || book == NULL)
+    {
         return 0; // Invalid borrower or book
     }
 
     int found = 0;
-    for (int i = 0; i < borrower->numBorrowedBooks; i++) {
-        if (borrower->borrowedBooks[i] == book) {
+    for (int i = 0; i < borrower->numBorrowedBooks; i++)
+    {
+        if (borrower->borrowedBooks[i] == book)
+        {
             borrower->borrowedBooks[i] = NULL;
             found = 1;
             break;
         }
     }
 
-    if (!found) {
+    if (!found)
+    {
         return -1; // Book not found in borrower's borrowed books
     }
 
     // Shift remaining books to fill the gap
-    for (int i = 0; i < borrower->numBorrowedBooks - 1; i++) {
-        if (borrower->borrowedBooks[i] == NULL) {
+    for (int i = 0; i < borrower->numBorrowedBooks - 1; i++)
+    {
+        if (borrower->borrowedBooks[i] == NULL)
+        {
             borrower->borrowedBooks[i] = borrower->borrowedBooks[i + 1];
             borrower->borrowedBooks[i + 1] = NULL;
         }
@@ -89,23 +101,28 @@ int removeBorrowedBook(struct Borrower* borrower, struct LibraryBook* book) {
     return 1; // Successfully removed book
 }
 
-
 // Function to reset borrower's fines
-void resetFines(struct Borrower* borrower) {
-    if (borrower == NULL) {
+void resetFines(struct Borrower *borrower)
+{
+    if (borrower == NULL)
+    {
         return;
     }
     borrower->fine = 0;
 }
 
 // Function to check if a borrower has borrowed a specific book
-int hasBorrowedBook(struct Borrower* borrower, struct LibraryBook* book) {
-    if (borrower == NULL || book == NULL) {
+int hasBorrowedBook(struct Borrower *borrower, struct LibraryBook *book)
+{
+    if (borrower == NULL || book == NULL)
+    {
         return 0; // Invalid borrower or book
     }
 
-    for (int i = 0; i < borrower->numBorrowedBooks; i++) {
-        if (borrower->borrowedBooks[i] == book) {
+    for (int i = 0; i < borrower->numBorrowedBooks; i++)
+    {
+        if (borrower->borrowedBooks[i] == book)
+        {
             return 1; // Borrower has borrowed this book
         }
     }
@@ -114,15 +131,19 @@ int hasBorrowedBook(struct Borrower* borrower, struct LibraryBook* book) {
 }
 
 // Function to free memory allocated for a Borrower
-void freeBorrower(struct Borrower* borrower) {
+void freeBorrower(struct Borrower *borrower)
+{
     free(borrower);
 }
 
 // insert a new borrower into the BST
-struct BSTNodeBorrower* insertBorrower(struct BSTNodeBorrower* root, struct Borrower* borrower) {
-    if (root == NULL) {
-        struct BSTNodeBorrower* newNode = (struct BSTNodeBorrower*)malloc(sizeof(struct BSTNodeBorrower));
-        if (newNode == NULL) {
+struct BSTNodeBorrower *insertBorrower(struct BSTNodeBorrower *root, struct Borrower *borrower)
+{
+    if (root == NULL)
+    {
+        struct BSTNodeBorrower *newNode = (struct BSTNodeBorrower *)malloc(sizeof(struct BSTNodeBorrower));
+        if (newNode == NULL)
+        {
             return NULL; // Memory allocation failed
         }
 
@@ -132,9 +153,12 @@ struct BSTNodeBorrower* insertBorrower(struct BSTNodeBorrower* root, struct Borr
         return newNode;
     }
 
-    if (strcmp(borrower->username, root->data.username) < 0) {
+    if (strcmp(borrower->username, root->data.username) < 0)
+    {
         root->left = insertBorrower(root->left, borrower);
-    } else {
+    }
+    else
+    {
         root->right = insertBorrower(root->right, borrower);
     }
 
@@ -142,8 +166,10 @@ struct BSTNodeBorrower* insertBorrower(struct BSTNodeBorrower* root, struct Borr
 }
 
 // Function to display all borrowers in the BST
-void displayBorrowers(struct BSTNodeBorrower* root) {
-    if (root == NULL) {
+void displayBorrowers(struct BSTNodeBorrower *root)
+{
+    if (root == NULL)
+    {
         return;
     }
 
@@ -154,48 +180,62 @@ void displayBorrowers(struct BSTNodeBorrower* root) {
     printf("ID: %d\n", root->data.ID);
     printf("\n");
     displayBorrowers(root->right);
-
 }
 
-
 // Function to search for a borrower in the BST
-struct BSTNodeBorrower* searchBorrower(struct BSTNodeBorrower* root, const char* username) {
-    if (root == NULL || strcmp(username, root->data.username) == 0) {
+struct BSTNodeBorrower *searchBorrower(struct BSTNodeBorrower *root, const char *username)
+{
+    if (root == NULL || strcmp(username, root->data.username) == 0)
+    {
         return root;
     }
 
-    if (strcmp(username, root->data.username) < 0) {
+    if (strcmp(username, root->data.username) < 0)
+    {
         return searchBorrower(root->left, username);
-    } else {
+    }
+    else
+    {
         return searchBorrower(root->right, username);
     }
 }
 
 // Function to delete a borrower from the BST
-struct BSTNodeBorrower* deleteBorrower(struct BSTNodeBorrower* root, const char* username) {
-    if (root == NULL) {
+struct BSTNodeBorrower *deleteBorrower(struct BSTNodeBorrower *root, const char *username)
+{
+    if (root == NULL)
+    {
         return root;
     }
 
-    if (strcmp(username, root->data.username) < 0) {
+    if (strcmp(username, root->data.username) < 0)
+    {
         root->left = deleteBorrower(root->left, username);
-    } else if (strcmp(username, root->data.username) > 0) {
+    }
+    else if (strcmp(username, root->data.username) > 0)
+    {
         root->right = deleteBorrower(root->right, username);
-    } else {
+    }
+    else
+    {
         // Node with only one child or no child
-        if (root->left == NULL) {
-            struct BSTNodeBorrower* temp = root->right;
+        if (root->left == NULL)
+        {
+            struct BSTNodeBorrower *temp = root->right;
             free(root);
             return temp;
-        } else if (root->right == NULL) {
-            struct BSTNodeBorrower* temp = root->left;
+        }
+        else if (root->right == NULL)
+        {
+            struct BSTNodeBorrower *temp = root->left;
             free(root);
             return temp;
         }
 
         // Node with two children: Get the inorder successor (smallest in the right subtree)
-        struct BSTNodeBorrower* temp = root->right;
-        while (temp->left != NULL) {
+        struct BSTNodeBorrower *temp = root->right;
+        while (temp->left != NULL)
+        {
             temp = temp->left;
         }
 
@@ -209,10 +249,11 @@ struct BSTNodeBorrower* deleteBorrower(struct BSTNodeBorrower* root, const char*
     return root;
 }
 
-
 // Function to free memory allocated for the BST
-void freeBSTBorrowers(struct BSTNodeBorrower* root) {
-    if (root == NULL) {
+void freeBSTBorrowers(struct BSTNodeBorrower *root)
+{
+    if (root == NULL)
+    {
         return;
     }
 
@@ -221,29 +262,40 @@ void freeBSTBorrowers(struct BSTNodeBorrower* root) {
     free(root);
 }
 
-
 // Function to read borrower data from a file and insert into BST
 // Function to read borrower data from a file and insert into BST
-void ReadDatabase(struct BSTNodeBorrower **root, const char *filename) {
+void ReadDatabase(struct BSTNodeBorrower **root, const char *filename)
+{
     FILE *file = fopen(filename, "r");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         perror("Error opening file");
         exit(EXIT_FAILURE);
     }
 
     char buffer[BUFFER_SIZE];
-    while (fgets(buffer, BUFFER_SIZE, file) != NULL) {
+    while (fgets(buffer, BUFFER_SIZE, file) != NULL)
+    {
         // Remove newline character if present
         buffer[strcspn(buffer, "\n")] = 0;
 
-        char *username = strtok(buffer, ",");
-        char *name = strtok(NULL, ",");
-        char *password = strtok(NULL, ",");
-        char *contact = strtok(NULL, ",");
-        char *ID = strtok(NULL, ",");
+        char *username = strtok(buffer, " ");
+        char *name = strtok(NULL, " ");
+        char *password = strtok(NULL, " ");
+        char *contact = strtok(NULL, " ");
+        char *ID = strtok(NULL, " ");
+
+        // Skip the additional fields
+        strtok(NULL, " "); // Skip the first borrowed book
+        strtok(NULL, " "); // Skip the second borrowed book
+        strtok(NULL, " "); // Skip the third borrowed book
+        strtok(NULL, " "); // Skip numBorrowedBooks
+        strtok(NULL, " "); // Skip fine
+        strtok(NULL, " "); // Skip isLate
 
         // Check if all fields are present
-        if (username == NULL || name == NULL || password == NULL || contact == NULL || ID == NULL) {
+        if (username == NULL || name == NULL || password == NULL || contact == NULL || ID == NULL)
+        {
             fprintf(stderr, "Error: Invalid format in file\n");
             continue; // Skip this line and proceed with the next
         }
@@ -251,8 +303,9 @@ void ReadDatabase(struct BSTNodeBorrower **root, const char *filename) {
         long long int contactNum = atoll(contact);
         int IDNum = atoi(ID);
 
-        struct Borrower *newBorrower = createBorrower(username, name, password, contactNum, IDNum);
-        if (newBorrower == NULL) {
+        Borrower *newBorrower = createBorrower(username, name, password, contactNum, IDNum);
+        if (newBorrower == NULL)
+        {
             fprintf(stderr, "Error: Memory allocation failed\n");
             continue; // Skip this line and proceed with the next
         }
@@ -263,15 +316,15 @@ void ReadDatabase(struct BSTNodeBorrower **root, const char *filename) {
     fclose(file);
 }
 
-
-int main() {
+int initializeBorrower()
+{
     struct BSTNodeBorrower *root = NULL;
 
     ReadDatabase(&root, "../database/users/borrower.txt");
 
-    displayBorrowers(root);
+    // displayBorrowers(root);
 
-    freeBSTBorrowers(root);
+    // freeBSTBorrowers(root);
 
     return 0;
 }

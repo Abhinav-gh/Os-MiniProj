@@ -88,7 +88,9 @@ void LibraryMenuPrinter()
     printf("2.) Remove a book\n");
     printf("3.) View all books\n");
     printf("4.) View all borrowers\n");
-    printf("5.) Logout\n\n");
+    printf("5.) Add new borrowers\n");
+    printf("7.) Remove a borrowers\n");
+    printf("8.) Logout\n\n");
     printf("6.) Show menu again\n\n");
     printf("Enter your choice: ");
 }
@@ -198,7 +200,7 @@ void LibrarianMenu(int sock)
     send(sock, "librarian", strlen("librarian"), 0); // send role to server
     LibraryMenuPrinter();
     int choice;
-    while (choice != 5)
+    while (choice != 8)
     {
         scanf("%d", &choice);
 
@@ -271,6 +273,12 @@ void LibrarianMenu(int sock)
             send(sock, "viewBorrowers", strlen("viewBorrowers"), 0);
             break;
         case 5:
+            send(sock, "addBorrower", strlen("addBorrower"), 0);
+            break;
+        case 7:
+            send(sock, "removeBorrower", strlen("removeBorrower"), 0);
+            break;
+        case 8:
             send(sock, "logout", strlen("logout"), 0);
             break;
         case 6:
@@ -282,6 +290,10 @@ void LibrarianMenu(int sock)
 
         // Listen for incoming messages from the server
         read(sock, message, BUFFER_SIZE);
+        if(choice==8){
+            printf("Thank you for using our application.\n Take care!\n");
+            return;
+        }
         printf("%s\n", message); // server tells if authenticated or not
         printf("Enter your choice: ");
     }

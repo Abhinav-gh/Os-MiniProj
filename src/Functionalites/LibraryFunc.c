@@ -21,24 +21,6 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root)
             buffer[valread] = '\0';
             strncpy(genre, buffer, BUFFER_SIZE - 1);
             printf("Genre: %s\n", genre);
-            // implement add book now
-            // recieve the library book struct from the client
-            // struct LibraryBook *newBook = (struct LibraryBook *)malloc(sizeof(struct LibraryBook));
-            // the client has done this :send(sock, &book, sizeof(book), 0);
-            // the librarybook struct is like this:
-            //             struct LibraryBook {
-            //     char title[MAX_TITLE_LENGTH];
-            //     char author[MAX_AUTHOR_LENGTH];
-            //     char ISBN[MAX_ISBN_LENGTH];
-            //     int numCopies;
-            //     int isAvailable;
-            //     int yearPublished;
-            //     time_t issueDate;
-            //     time_t returnDate;
-            //     struct Borrower borrower;
-            // };
-            // so we have to recieve the struct from the client
-
             struct LibraryBookPacket bookpacket;
             struct LibraryBook newBook;
             int valread = recv(new_socket, &bookpacket, sizeof(bookpacket), 0);
@@ -70,7 +52,6 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root)
         else if (strcmp(requestedFunc, "remove") == 0)
         {
             // remove book
-            // first prepare to recieve a single array of 2 strings, isbn and genre
             char arr[2][BUFFER_SIZE] = {0};
             int valread = read(new_socket, arr[0], sizeof(arr));
             // handle error
@@ -98,6 +79,12 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root)
         {
             // view all books
             send(new_socket, "Borrowers viewed", strlen("Borrowers viewed"), 0);
+        }
+        else if(strcmp(requestedFunc, "addBorrower") == 0){
+            send(new_socket, "Borrower added successfully", strlen("Borrower added successfully"), 0);
+        }
+        else if(strcmp(requestedFunc, "removeBorrower") == 0){
+            send(new_socket, "Borrower removed successfully", strlen("Borrower removed successfully"), 0);
         }
         else if (strcmp(requestedFunc, "logout") == 0)
         {

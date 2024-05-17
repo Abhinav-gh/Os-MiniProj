@@ -6,7 +6,7 @@
 
 
 void funcHandler(int new_socket){
-    initialize();
+    initializeBooks();
     char role[BUFFER_SIZE] = {0};
     char buffer[BUFFER_SIZE] = {0};
     // read the role coming from the client
