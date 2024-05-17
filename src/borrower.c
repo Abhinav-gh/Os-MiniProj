@@ -165,6 +165,25 @@ struct BSTNodeBorrower *insertBorrower(struct BSTNodeBorrower *root, struct Borr
     return root;
 }
 
+void getAllBorrowersInfo(struct BSTNodeBorrower *root, char *borrowersInfo)
+{
+    if (root == NULL)
+    {
+        return;
+    }
+
+    getAllBorrowersInfo(root->left, borrowersInfo);
+
+    // Concatenate borrower information to the string
+    sprintf(borrowersInfo + strlen(borrowersInfo), "Username: %s\n", root->data.username);
+    sprintf(borrowersInfo + strlen(borrowersInfo), "Name: %s\n", root->data.name);
+    sprintf(borrowersInfo + strlen(borrowersInfo), "Contact: %lld\n", root->data.contact);
+    sprintf(borrowersInfo + strlen(borrowersInfo), "ID: %d\n", root->data.ID);
+    sprintf(borrowersInfo + strlen(borrowersInfo), "\n");
+
+    getAllBorrowersInfo(root->right, borrowersInfo);
+}
+
 // Function to display all borrowers in the BST
 void displayBorrowers(struct BSTNodeBorrower *root)
 {
@@ -199,24 +218,7 @@ char *getAllBorrowersInfoWrapper(struct BSTNodeBorrower *root)
     return borrowersInfo;
 }
 
-void getAllBorrowersInfo(struct BSTNodeBorrower *root, char *borrowersInfo)
-{
-    if (root == NULL)
-    {
-        return;
-    }
 
-    getAllBorrowersInfo(root->left, borrowersInfo);
-
-    // Concatenate borrower information to the string
-    sprintf(borrowersInfo + strlen(borrowersInfo), "Username: %s\n", root->data.username);
-    sprintf(borrowersInfo + strlen(borrowersInfo), "Name: %s\n", root->data.name);
-    sprintf(borrowersInfo + strlen(borrowersInfo), "Contact: %lld\n", root->data.contact);
-    sprintf(borrowersInfo + strlen(borrowersInfo), "ID: %d\n", root->data.ID);
-    sprintf(borrowersInfo + strlen(borrowersInfo), "\n");
-
-    getAllBorrowersInfo(root->right, borrowersInfo);
-}
 // Function to search for a borrower in the BST
 struct BSTNodeBorrower *searchBorrower(struct BSTNodeBorrower *root, const char *username)
 {

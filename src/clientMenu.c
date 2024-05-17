@@ -262,9 +262,9 @@ void LibrarianMenu(int sock)
             // printf("arr[1]: %s\n", arr[1]);
             // send the 2d array to server
             printf("sending...\n");
-            send(sock,arr[0], strlen(arr[0]), 0);
+            send(sock, arr[0], strlen(arr[0]), 0);
             usleep(100000);
-            send(sock,arr[1], strlen(arr[1]), 0);
+            send(sock, arr[1], strlen(arr[1]), 0);
             break;
         case 3:
             send(sock, "viewBooks", strlen("viewBooks"), 0);
@@ -274,6 +274,59 @@ void LibrarianMenu(int sock)
             break;
         case 5:
             send(sock, "addBorrower", strlen("addBorrower"), 0);
+            // now we have to add borrower. For that we need info asdfined by  borrower struct which is
+            //         typedef struct Borrower {
+            //     char username[MAX_NAME_LENGTH];
+            //     char name[MAX_NAME_LENGTH];
+            //     char password[MAX_NAME_LENGTH];
+            //     long long int contact;
+            //     int ID;
+            //     struct LibraryBook* borrowedBooks[3]; // Now using pointers to LibraryBook
+            //     int numBorrowedBooks;
+            //     int fine;
+            //     int isLate;
+            // } Borrower;
+            // so we need to take input for all these fields
+
+            printf("Enter the username of the borrower: ");
+            char username[100];
+            scanf("%s", username);
+            printf("Enter the name of the borrower: ");
+            char name[100];
+            scanf("%s", name);
+            printf("Enter the password of the borrower: ");
+            char password[100];
+            scanf("%s", password);
+            printf("Enter the contact of the borrower: ");
+            long long int contact;
+            scanf("%lld", &contact);
+            printf("Enter the ID of the borrower: ");
+            int ID;
+            scanf("%d", &ID);
+            // now make a borrower struct and send it to server
+            struct BorrowerPacket borrowerpacket;
+            // add data to bookpacket
+            strcpy(borrowerpacket.username, username);
+            strcpy(borrowerpacket.name, name);
+            strcpy(borrowerpacket.password, password);
+            borrowerpacket.contact = contact;
+            borrowerpacket.ID = ID;
+            //set borrowed boos array to null
+            borrowerpacket.numBorrowedBooks = 0;
+            borrowerpacket.fine = 0;
+            borrowerpacket.isLate = 0;
+            // now print all the fields of borrower packet
+            printf("Username: %s\n", borrowerpacket.username);
+            printf("Name: %s\n", borrowerpacket.name);
+            printf("Password: %s\n", borrowerpacket.password);
+            printf("Contact: %lld\n", borrowerpacket.contact);
+            printf("ID: %d\n", borrowerpacket.ID);
+            printf("Num Borrowed Books: %d\n", borrowerpacket.numBorrowedBooks);
+            printf("Fine: %d\n", borrowerpacket.fine);
+            printf("Is Late: %d\n", borrowerpacket.isLate);
+            // send the bookpacket to server
+            send(sock, &borrowerpacket, sizeof(borrowerpacket), 0);
+
             break;
         case 7:
             send(sock, "removeBorrower", strlen("removeBorrower"), 0);
@@ -290,7 +343,8 @@ void LibrarianMenu(int sock)
 
         // Listen for incoming messages from the server
         read(sock, message, BUFFER_SIZE);
-        if(choice==8){
+        if (choice == 8)
+        {
             printf("Thank you for using our application.\n Take care!\n");
             return;
         }

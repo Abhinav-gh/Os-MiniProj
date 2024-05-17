@@ -88,6 +88,28 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
 
         else if (strcmp(requestedFunc, "addBorrower") == 0)
         {
+            struct BorrowerPacket borrowerPacket;
+            // recieve the borrower packet
+            int valread = recv(new_socket, &borrowerPacket, sizeof(borrowerPacket), 0);
+            // print the data recieved
+            // printf("Borrower Packet: %s %s %s %lld %d %d %d %d\n", borrowerPacket.username, borrowerPacket.name, borrowerPacket.password, borrowerPacket.contact, borrowerPacket.ID, borrowerPacket.numBorrowedBooks, borrowerPacket.fine, borrowerPacket.isLate);
+            struct Borrower newBorrower;
+            // get bookpacket data into new
+            strcpy(newBorrower.username, borrowerPacket.username);
+            strcpy(newBorrower.name, borrowerPacket.name);
+            strcpy(newBorrower.password, borrowerPacket.password);
+            newBorrower.contact = borrowerPacket.contact;
+            newBorrower.ID = borrowerPacket.ID;
+            newBorrower.numBorrowedBooks = borrowerPacket.numBorrowedBooks;
+            newBorrower.fine = borrowerPacket.fine;
+            newBorrower.isLate = borrowerPacket.isLate;
+            // set the borrowed books to NULL
+            for (int i = 0; i < 3; i++)
+            {
+                newBorrower.borrowedBooks[i] = NULL;
+            }
+            // add the borrower
+            borrowerRoot = insertBorrower(borrowerRoot, &newBorrower);
             send(new_socket, "Borrower added successfully", strlen("Borrower added successfully"), 0);
         }
         else if (strcmp(requestedFunc, "removeBorrower") == 0)
