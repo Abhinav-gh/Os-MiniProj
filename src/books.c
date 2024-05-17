@@ -29,7 +29,7 @@ void addGenre(struct BSTNodeBook **root, const char *genreName)
 
 // Add book to the BST
 void addBook(struct BSTNodeBook **root, const char *genreName, struct LibraryBook *book)
-{   
+{
     if (*root == NULL)
     {
         addGenre(root, genreName);
@@ -275,7 +275,7 @@ int isBookAvailable(struct BSTNodeBook *root, const char *genreName, const char 
     return book->isAvailable;
 }
 
-void borrowBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN, struct Borrower *borrower)
+int borrowBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN, struct Borrower *borrower)
 {
     struct LibraryBook *book = searchBook(root, genreName, ISBN);
     if (book == NULL)
@@ -299,10 +299,12 @@ void borrowBook(struct BSTNodeBook *root, const char *genreName, const char *ISB
                 book->issueDate = time(NULL);
                 borrower->borrowedBooks[borrower->numBorrowedBooks++] = book;
                 printf("Book borrowed successfully\n");
+                return 0;
             }
             else
             {
                 printf("You have already borrowed 3 books\n");
+                return 1;
             }
         }
         else

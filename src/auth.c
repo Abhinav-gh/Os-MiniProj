@@ -153,7 +153,7 @@ int authHandler(int new_socket)
     {
         send(new_socket, "Authenticated", strlen("Authenticated"), 0);
         // printf("Th role is %s\n", role);
-        usleep(1000000);
+        usleep(3000000);
         // ------->>>>> Addd by abhinav <<<<<-------
         if (strcmp(role, "borrower") == 0)
         {

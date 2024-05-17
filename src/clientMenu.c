@@ -9,6 +9,8 @@
 #include "../header/clientMenu.h"
 
 #define BUFFER_SIZE 1024
+char clientUsername[BUFFER_SIZE] = {0};
+char clientPassword[BUFFER_SIZE] = {0};
 char message[BUFFER_SIZE] = {0};
 
 int loginMenu(int sock) // returns if authenticated or not
@@ -61,6 +63,9 @@ int loginMenu(int sock) // returns if authenticated or not
     printf("%s\n", message); // server tells if authenticated or not
     if (strcmp(message, "Authenticated") == 0)
     {
+        strcpy(clientUsername, username);
+        strcpy(clientPassword, password);
+        // printf("Welcome %s\n", clientUsername);
         return 1;
     }
     else
@@ -160,7 +165,20 @@ void BorrowerMenu(int sock)
         switch (choice)
         {
         case 1:
+            // take the isbn, genre and username of the borrower
             send(sock, "borrow", strlen("borrow"), 0);
+            printf("Enter the ISBN of the book you want to borrow: ");
+            char isbnToBorrow[100];
+            scanf("%s", isbnToBorrow);
+            printf("Enter the genre of the book you want to borrow: ");
+            char genreToBorrow[100];
+            scanf("%s", genreToBorrow);
+            send(sock, isbnToBorrow, strlen(isbnToBorrow), 0);
+            usleep(100000);
+            send(sock, genreToBorrow, strlen(genreToBorrow), 0);
+            usleep(100000);
+            send(sock, clientUsername, strlen(clientUsername), 0);
+            usleep(100000);
             break;
         case 2:
             send(sock, "return", strlen("return"), 0);
@@ -297,7 +315,7 @@ void LibrarianMenu(int sock)
             strcpy(borrowerpacket.password, password);
             borrowerpacket.contact = contact;
             borrowerpacket.ID = ID;
-            //set borrowed boos array to null
+            // set borrowed boos array to null
             borrowerpacket.numBorrowedBooks = 0;
             borrowerpacket.fine = 0;
             borrowerpacket.isLate = 0;

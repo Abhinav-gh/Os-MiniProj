@@ -237,6 +237,17 @@ struct BSTNodeBorrower *searchBorrower(struct BSTNodeBorrower *root, const char 
     }
 }
 
+// Function to get borrower data from the BST
+struct Borrower *getBorrowerData(struct BSTNodeBorrower *root, const char *username)
+{
+    struct BSTNodeBorrower *node = searchBorrower(root, username);
+    if (node == NULL)
+    {
+        return NULL;
+    }
+
+    return &node->data;
+}
 // Function to delete a borrower from the BST
 struct BSTNodeBorrower *deleteBorrower(struct BSTNodeBorrower *root, const char *username)
 {
@@ -353,6 +364,46 @@ void ReadDatabaseBorrower(struct BSTNodeBorrower **root, const char *filename)
     fclose(file);
 }
 
+// Helper function to perform in-order traversal and write to file
+void writeBSTToFileHelperBorrower(struct BSTNodeBorrower *root, FILE *file)
+{
+    if (root == NULL)
+    {
+        return;
+    }
+
+    writeBSTToFileHelperBorrower(root->left, file);
+
+    fprintf(file, "%s %s %s %lld %d ", root->data.username, root->data.name, root->data.password, root->data.contact, root->data.ID);
+    for (int i = 0; i < 3; i++)
+    {
+        if (root->data.borrowedBooks[i] == NULL)
+        {
+            fprintf(file, "NULL ");
+        }
+        else
+        {
+            fprintf(file, "%s ", root->data.borrowedBooks[i]->ISBN);
+        }
+    }
+    fprintf(file, "%d %d %d\n", root->data.numBorrowedBooks, root->data.fine, root->data.isLate);
+
+    writeBSTToFileHelperBorrower(root->right, file);
+}
+// Function to write BST to fil
+void writeBSTToFileBorrower(struct BSTNodeBorrower *root, const char *filename)
+{
+    FILE *file = fopen(filename, "w");
+    if (file == NULL)
+    {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    writeBSTToFileHelperBorrower(root, file);
+
+    fclose(file);
+}
 struct BSTNodeBorrower *borrowerRoot = NULL;
 int initializeBorrower()
 {
