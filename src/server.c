@@ -15,7 +15,7 @@ int IsAuthenticated = 0;
 
 void receive_packet(int sock, MsgPacket *packet) {
     
-    char buffer[1024];  // Assuming the buffer is large enough
+    char buffer[4096];  // Assuming the buffer is large enough
     int len = recv(sock, buffer, sizeof(buffer), 0);
     if (len <= 0) {
         perror("recv");

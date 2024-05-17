@@ -11,11 +11,18 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <sys/file.h> 
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/stat.h>
 
+#define MAX_PASSWORD_LENGTH 20
 
 
 int eligible =0;
 int res = 0;
+int validISBN = 0;
+const char *eot;
 
 
 //funtion to create a new borrower
@@ -90,30 +97,52 @@ void ReadDatabaseBorrower(struct BSTNodeBorrower  **root, const char *filename) 
     fclose(file);
 }
 
-// Helper function to write the BST to a file
-void writeBSTToFileHelperBorrower(struct BSTNodeBorrower *root, FILE *file) {
+
+
+
+// Helper function to write the BST to a file with file locking
+void writeBSTToFileHelperBorrower(struct BSTNodeBorrower *root, int fd) {
     if (root == NULL) {
         return;
     }
 
-    writeBSTToFileHelperBorrower(root->left, file);
-    fprintf(file, "%d %s %s %s %lld %s %s %s %d %d %d %d\n", root->data.ID, root->data.username, root->data.name, root->data.password, root->data.contact, root->data.borrowedBooks[0], root->data.borrowedBooks[1], root->data.borrowedBooks[2], root->data.numBorrowedBooks, root->data.fine, root->data.isLate, root->data.LoginStatus);
-    writeBSTToFileHelperBorrower(root->right, file);
+    writeBSTToFileHelperBorrower(root->left, fd);
+    dprintf(fd, "%d %s %s %s %lld %s %s %s %d %d %d %d\n", root->data.ID, root->data.username, root->data.name, root->data.password, root->data.contact, root->data.borrowedBooks[0], root->data.borrowedBooks[1], root->data.borrowedBooks[2], root->data.numBorrowedBooks, root->data.fine, root->data.isLate, root->data.LoginStatus);
+    writeBSTToFileHelperBorrower(root->right, fd);
 }
 
-
-// funtion to write the database to a file
+// Function to write the database to a file with file locking
 void WriteDatabaseBorrower(struct BSTNodeBorrower *root, const char *filename) {
-    FILE *file = fopen(filename, "w");
-    if (file == NULL) {
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1) {
         perror("Error opening file");
         exit(EXIT_FAILURE);
     }
 
-    writeBSTToFileHelperBorrower(root, file);
+    struct flock fl;
+    fl.l_type = F_WRLCK; 
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0;
 
-    fclose(file);
+    // Acquire exclusive lock
+    if (fcntl(fd, F_SETLKW, &fl) == -1) {
+        perror("Error locking file");
+        exit(EXIT_FAILURE);
+    }
+
+    writeBSTToFileHelperBorrower(root, fd);
+
+    // Release lock
+    fl.l_type = F_UNLCK;
+    if (fcntl(fd, F_SETLK, &fl) == -1) {
+        perror("Error unlocking file");
+        exit(EXIT_FAILURE);
+    }
+
+    close(fd);
 }
+
 
 //funtion to set the login status of a borrower
 void setLoginStatus(struct BSTNodeBorrower *root, char *username, int status) {
@@ -132,30 +161,28 @@ void setLoginStatus(struct BSTNodeBorrower *root, char *username, int status) {
     } else {
         setLoginStatus(root->right, username, status);
     }
-
-
 }
 
 
-void showBorrowedBooks(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
 
+
+
+void showBorrowedBooks(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
     if (root == NULL) {
-        const char *eot = "END_OF_TRANSMISSION";
-        send(socket, eot, strlen(eot) + 1, 0);
         return;
     }
 
-    if (strcmp(root->data.username, packet->username) == 0) {
+    if (strcmp(root->data.username, packet->username) == 0) 
+    {
         char buffer[BUFFER_SIZE];
-        strcpy(buffer, "Borrowed Books:\n");
-        for (int i = 0; i < root->data.numBorrowedBooks; i++) {
-            strcat(buffer, root->data.borrowedBooks[i]);
-            strcat(buffer, "\n");
+        for (int i = 0; i < 3; i++) {
+            if (strcmp(root->data.borrowedBooks[i], "NULL") != 0) {
+                sprintf(buffer, "\t%s\n", root->data.borrowedBooks[i]);
+                send(socket, buffer, strlen(buffer), 0);
+                usleep(10000);
+            }
         }
-        send(socket, buffer, strlen(buffer), 0);
-        usleep(10000);
-        const char *eot = "END_OF_TRANSMISSION";
-        send(socket, eot, strlen(eot) + 1, 0);
+        send(socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
         return;
     }
 
@@ -165,18 +192,13 @@ void showBorrowedBooks(int socket, struct BSTNodeBorrower *root, MsgPacket *pack
         showBorrowedBooks(socket, root->right, packet);
     }
 
-    if(root->left == NULL && root->right == NULL)
-    {
-        const char *eot = "END_OF_TRANSMISSION";
-        send(socket, eot, strlen(eot) + 1, 0);
-    }
+    const char *endOfTransmission = "END_OF_TRANSMISSION";
+    send(socket, endOfTransmission, strlen(endOfTransmission) + 1, 0);
 }
 
 
 void showMyInfo(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
     if (root == NULL) {
-        const char *eot = "END_OF_TRANSMISSION";
-        send(socket, eot, strlen(eot) + 1, 0);
         return;
     }
 
@@ -187,19 +209,23 @@ void showMyInfo(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
         usleep(10000);
         send(socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
     }
+
+    const char *endOfTransmission = "END_OF_TRANSMISSION";
+    send(socket, endOfTransmission, strlen(endOfTransmission) + 1, 0);
 }
+
+    
 
 void changePassword(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
     if (root == NULL) {
-        const char *eot = "END_OF_TRANSMISSION";
-        send(socket, eot, strlen(eot) + 1, 0);
         return;
     }
 
     if (strcmp(root->data.username, packet->username) == 0) {
         strcpy(root->data.password, packet->payload[0]);
+        root->data.password[MAX_PASSWORD_LENGTH - 1] = '\0';
         WriteDatabaseBorrower(root, "../database/users/borrower.txt");
-        send(socket, "Password changed successfully", strlen("Password changed successfully") + 1, 0);
+        send(socket, "\tPassword changed successfully", strlen("\tPassword changed successfully") + 1, 0);
         usleep(10000);
         send(socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
         return;
@@ -210,19 +236,20 @@ void changePassword(int socket, struct BSTNodeBorrower *root, MsgPacket *packet)
     } else {
         changePassword(socket, root->right, packet);
     }
+
+    const char *endOfTransmission = "END_OF_TRANSMISSION";
+    send(socket, endOfTransmission, strlen(endOfTransmission) + 1, 0);
 }
 
 void updateContact(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
     if (root == NULL) {
-        const char *eot = "END_OF_TRANSMISSION";
-        send(socket, eot, strlen(eot) + 1, 0);
         return;
     }
 
     if (strcmp(root->data.username, packet->username) == 0) {
         root->data.contact = atoll(packet->payload[0]);
         WriteDatabaseBorrower(root, "../database/users/borrower.txt");
-        send(socket, "Contact updated successfully", strlen("Contact updated successfully") + 1, 0);
+        send(socket, "\tContact updated successfully", strlen("Contact updated successfully") + 1, 0);
         usleep(10000);
         send(socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
         return;
@@ -233,12 +260,13 @@ void updateContact(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) 
     } else {
         updateContact(socket, root->right, packet);
     }
+
+    const char *endOfTransmission = "END_OF_TRANSMISSION";
+    send(socket, endOfTransmission, strlen(endOfTransmission) + 1, 0);
 }   
 
 void checkDueDate(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
     if (root == NULL) {
-        const char *eot = "END_OF_TRANSMISSION";
-        send(socket, eot, strlen(eot) + 1, 0);
         return;
     }
 
@@ -264,17 +292,19 @@ void checkDueDate(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
     } else {
         checkDueDate(socket, root->right, packet);
     }
+
+    const char *endOfTransmission = "END_OF_TRANSMISSION";
+    send(socket, endOfTransmission, strlen(endOfTransmission) + 1, 0);
 }
 
 
 
 void logout(int socket) {
-    const char *msg = "You have been logged out successfully";
-    send(socket, msg, strlen(msg)+1, 0); // Removed +1 from strlen(msg)
+    const char *msg = "     You have been logged out successfully\n\n";
+    send(socket, msg, strlen(msg)+1, 0); 
     usleep(10000);
     const char *eot = "END_OF_TRANSMISSION";
-    send(socket, eot, strlen(eot)+1, 0); // Removed +1 from strlen(eot)
-    close(socket); // Close the socket after sending logout message
+    send(socket, eot, strlen(eot)+1, 0); 
 }
 
 
@@ -302,6 +332,7 @@ void borrowBookUserUpdate(struct BSTNodeBorrower *root, char *username, const ch
     } else {
         borrowBookUserUpdate(root->right, username, ISBN, rootbook);
     }
+
 }      
 
 
@@ -326,11 +357,9 @@ int isEligibleToBorrow(struct BSTNodeBorrower *root, char *username) {
 }
 
 
-// Send Due dates along with the book title of all books borrowed by the user
+
 void sendDueDates(int socket, struct BSTNodeBorrower *root, MsgPacket *packet, struct BSTNodeBook *rootbook) {
     if (root == NULL) {
-        const char *eot = "END_OF_TRANSMISSION";
-        send(socket, eot, strlen(eot) + 1, 0);
         return;
     }
 
@@ -339,7 +368,7 @@ void sendDueDates(int socket, struct BSTNodeBorrower *root, MsgPacket *packet, s
         for (int i = 0; i < 3; i++) {
             if (strcmp(root->data.borrowedBooks[i], "NULL") != 0) {
                 int remainingTime = CheckRemainingTimeForBookReturn(rootbook, root->data.borrowedBooks[i]);
-                sprintf(buffer, "%s: %d days remaining\n", root->data.borrowedBooks[i], remainingTime);
+                sprintf(buffer, "\t%s: %d days remaining\n", root->data.borrowedBooks[i], remainingTime);
                 send(socket, buffer, strlen(buffer), 0);
                 usleep(10000);
             }
@@ -352,6 +381,60 @@ void sendDueDates(int socket, struct BSTNodeBorrower *root, MsgPacket *packet, s
         sendDueDates(socket, root->left, packet, rootbook);
     } else {
         sendDueDates(socket, root->right, packet, rootbook);
+    }
+
+    
+}
+
+
+int isEligibleTOReturn(struct BSTNodeBorrower *root, char *username, char *bookName) {
+    if (root == NULL) {
+        return 0;
+    }
+
+    if (strcmp(root->data.username, username) == 0) {
+        for (int i = 0; i < 3; i++) {
+            if (strcmp(root->data.borrowedBooks[i], bookName) == 0) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    if (strcmp(username, root->data.username) < 0) {
+        return isEligibleTOReturn(root->left, username, bookName);
+    } else {
+        return isEligibleTOReturn(root->right, username, bookName);
+    }
+}
+
+
+
+void returnBookUserUpdate(struct BSTNodeBorrower *root, char *username, const char *ISBN, struct BSTNodeBook *rootbook) {
+    if (root == NULL) {
+        return;
+    }
+
+    // Fetch the book name from ISBN
+    char bookName[MAX_TITLE_LENGTH];
+    FetchBookNameFromISBN(rootbook, ISBN, bookName);
+
+
+    if (strcmp(root->data.username, username) == 0) {
+        for (int i = 0; i < 3; i++) {
+            if (strcmp(root->data.borrowedBooks[i], bookName) == 0) {
+                strcpy(root->data.borrowedBooks[i], "NULL");
+                root->data.numBorrowedBooks--;
+                break;
+            }
+        }
+        return;
+    }
+
+    if (strcmp(username, root->data.username) < 0) {
+        returnBookUserUpdate(root->left, username, ISBN, rootbook);
+    } else {
+        returnBookUserUpdate(root->right, username, ISBN, rootbook);
     }
 }
 
@@ -378,10 +461,20 @@ void borrowerPacketHandler(int new_socket, MsgPacket *packet)
         break;
 
     case 3:
+
+        validISBN = validateISBN(packet->payload[0]);
+        if(validISBN == 0)
+        {
+            send(new_socket, "\t\tInvalid ISBN !", strlen("\t\tInvalid ISBN !") + 1, 0);
+            usleep(10000);
+            send(new_socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
+            break;
+        }
+
         eligible = isEligibleToBorrow(rootborrower, packet->username);
         if(eligible == 0)
         {
-            send(new_socket, "You have already borrowed 3 books", strlen("You have already borrowed 3 books") + 1, 0);
+            send(new_socket, "\tYou have already borrowed 3 books !", strlen("\tYou have already borrowed 3 books !") + 1, 0);
             usleep(10000);
             send(new_socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
             break;
@@ -398,7 +491,37 @@ void borrowerPacketHandler(int new_socket, MsgPacket *packet)
         break;
 
     case 4:
-        //return book
+        validISBN = validateISBN(packet->payload[0]);
+        if(validISBN == 0)
+        {
+            send(new_socket, "\t\tInvalid ISBN !", strlen("\t\tInvalid ISBN !") + 1, 0);
+            usleep(10000);
+            send(new_socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
+            break;
+        }
+
+        // Getting the book name from ISBN
+        char bookName[MAX_TITLE_LENGTH];
+        FetchBookNameFromISBN(rootbook, packet->payload[0], bookName);
+
+
+        eligible = isEligibleTOReturn(rootborrower, packet->username ,bookName);
+        if(eligible == 0)
+        {
+            send(new_socket, "\tYou have not borrowed any such book !", strlen("\tYou have not borrowed any book !") + 1, 0);
+            usleep(10000);
+            send(new_socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
+            break;
+        }
+
+        res = returnBook(new_socket,rootbook ,packet->payload[0], packet->username);
+        if(res == 1)
+        {
+            returnBookUserUpdate(rootborrower, packet->username, packet->payload[0],rootbook);
+            writeBSTToFileBook(rootbook, "../database/books/books.txt");
+            WriteDatabaseBorrower(rootborrower, "../database/users/borrower.txt");
+        }
+
         break;
     
     //show borrowed books
@@ -428,6 +551,8 @@ void borrowerPacketHandler(int new_socket, MsgPacket *packet)
         break;
 
     default:
+        eot = "END_OF_TRANSMISSION";
+        send(new_socket, eot, strlen(eot) + 1, 0);
         break;
 
     }

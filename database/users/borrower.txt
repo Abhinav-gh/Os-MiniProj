@@ -1,4 +1,4 @@
-1 a John b 9821087097 ToKillAMockingBird NULL NULL 1 0 0 0
+1 a John b 9821087097 TheSelfishGene ABriefHistoryOfTime TheSelfishGene 3 0 0 1
 2 username2 Jane password456 9876543210 NULL NULL NULL 0 0 0 0
 3 username3 Michael password789 5551234567 NULL NULL NULL 0 0 0 0
-
+3 username3 Michael password789 5551234567 NULL NULL NULL 0 0 0 0

@@ -12,6 +12,10 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <time.h>
+#include <fcntl.h> 
+#include <unistd.h> 
+
+
 
 
 void ReadAllGenres(int socket, struct BSTNodeBook *root, MsgPacket *packet) {
@@ -38,29 +42,33 @@ void ReadAllGenres(int socket, struct BSTNodeBook *root, MsgPacket *packet) {
 
 
 
-void ReadAllBooks(int socket, struct BSTNodeBook *root, MsgPacket *packet) {
+void ReadAllBooks(int socket,struct BSTNodeBook *root, MsgPacket *packet) {
     if (root == NULL)
         return;
 
     ReadAllBooks(socket, root->left, packet);
 
-    char buffer[300]; 
+    char buffer[400]; // Increased buffer size to accommodate the longest possible string
     for (int i = 0; i < root->genre.numBooks; i++) {
         struct LibraryBook *book = &(root->genre.books[i]);
-        snprintf(buffer, sizeof(buffer), "%s\nISBN : %s\n\n", book->title, book->ISBN);
+        snprintf(buffer, sizeof(buffer), "BOOK: %s\nAUTHOR: %s\nISBN: %s\nCOPIES AVAILABLE: %d\nYEAR-PUBLISHED: %d\n\n", 
+                 book->title, book->author, book->ISBN, book->numCopies,
+                 book->yearPublished);
         
-        if (send(socket, buffer, strlen(buffer) + 1, 0) == -1) { 
+        if (send(socket, buffer, strlen(buffer), 0) == -1) { 
             perror("send");
             return;
         }
+        send(socket, "\0", 1, 0);
         usleep(10000); 
     }
 
     ReadAllBooks(socket, root->right, packet);
-
+    
     const char *endOfTransmission = "END_OF_TRANSMISSION";
     send(socket, endOfTransmission, strlen(endOfTransmission) + 1, 0);
 }
+
 
 
 
@@ -182,91 +190,101 @@ void ReadDatabaseBook(struct BSTNodeBook **root, const char *filename) {
 
 
 
-// Helper function to perform in-order traversal and write to file
-void writeBSTToFileHelperBook(struct BSTNodeBook *root, FILE *file) {
+
+// Helper function to perform in-order traversal and write to file with file locking
+void writeBSTToFileHelperBook(struct BSTNodeBook *root, int fd) {
     if (root == NULL)
         return;
 
-    writeBSTToFileHelperBook(root->left, file);
+    writeBSTToFileHelperBook(root->left, fd);
 
     // Write the current node to the file
     for (int i = 0; i < root->genre.numBooks; i++) {
         struct LibraryBook *book = &(root->genre.books[i]);
-        fprintf(file, "%s %s %s %s %d %d %d %ld %ld %s\n", 
+        dprintf(fd, "%s %s %s %s %d %d %d %ld %ld %s\n", 
                 root->genre.name, book->title, book->author, 
                 book->ISBN, book->numCopies, book->isAvailable, 
                 book->yearPublished, book->issueDate, book->returnDate, book->borrowerUsername);
     }
 
-    writeBSTToFileHelperBook(root->right, file);
+    writeBSTToFileHelperBook(root->right, fd);
 }
 
 
-
-// Function to write BST to file
+// Function to write BST to file with file locking
 void writeBSTToFileBook(struct BSTNodeBook *root, const char *filename) {
-    FILE *file = fopen(filename, "w");
-    if (file == NULL) {
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1) {
         printf("Error opening file.\n");
         return;
     }
 
-    writeBSTToFileHelperBook(root, file);
+    struct flock fl;
+    fl.l_type = F_WRLCK; // Exclusive write lock
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0;
 
-    fclose(file);
+    // Acquire exclusive lock
+    if (fcntl(fd, F_SETLKW, &fl) == -1) {
+        perror("Error locking file");
+        exit(EXIT_FAILURE);
+    }
+
+    writeBSTToFileHelperBook(root, fd);
+
+    // Release lock
+    fl.l_type = F_UNLCK;
+    if (fcntl(fd, F_SETLK, &fl) == -1) {
+        perror("Error unlocking file");
+        exit(EXIT_FAILURE);
+    }
+
+    close(fd);
 }
+
 
 
 
 int borrowBook(int socket, struct BSTNodeBook *root, const char *ISBN, char *username) {
 
-
-    if (root == NULL) {
-        send(socket, "Book not found", 14, 0);
-        usleep(100000);
-        const char *eot = "END_OF_TRANSMISSION";
-        send(socket, eot, strlen(eot) + 1, 0);
+    if (root == NULL) 
         return 0;
+
+
+    if (borrowBook(socket, root->left, ISBN, username)) {
+        return 1;
     }
 
-
-    for (int i = 0; i < root->genre.numBooks; i++)
-     {
+    for (int i = 0; i < root->genre.numBooks; i++) 
+    {
         struct LibraryBook *book = &(root->genre.books[i]);
 
         if (strcmp(book->ISBN, ISBN) == 0) 
         {
-            if (book->numCopies == 0) 
+            if (book->numCopies == 0)
             {
                 book->isAvailable = 0;
-                send(socket, "Book not available", 18, 0);
-                usleep(100000);
-                const char *eot = "END_OF_TRANSMISSION";
-                send(socket, eot, strlen(eot) + 1, 0);
-                return 0;
+                send(socket, "\t\tBook not available !", strlen("\t\tBook not available !") + 1, 0);
             } 
-    
+            
             else 
             {
+                send(socket, "\t    Book borrowed successfully !", strlen("\t    Book borrowed successfully !") + 1, 0);
                 book->numCopies--;
                 book->isAvailable = book->numCopies > 0;
                 book->issueDate = time(NULL);
                 book->returnDate = book->issueDate + 604800; // 7 days
                 strncpy(book->borrowerUsername, username, sizeof(book->borrowerUsername) - 1);
                 book->borrowerUsername[sizeof(book->borrowerUsername) - 1] = '\0';
-                send(socket, "Book borrowed successfully", 26, 0);
-                usleep(100000);
-                const char *eot = "END_OF_TRANSMISSION";
-                send(socket, eot, strlen(eot) + 1, 0);
-                usleep(100000);
-                return 1; 
             }
+
+            usleep(10000);
+            const char *eot = "END_OF_TRANSMISSION";
+            send(socket, eot, strlen(eot) + 1, 0);
+            usleep(10000);
+            return 1;
         }
-    }
-
-
-    if (borrowBook(socket, root->left, ISBN, username)) {
-        return 1;
     }
 
 
@@ -274,11 +292,18 @@ int borrowBook(int socket, struct BSTNodeBook *root, const char *ISBN, char *use
         return 1;
     }
 
-    const char *eot = "END_OF_TRANSMISSION";
-    send(socket, eot, strlen(eot) + 1, 0);
-    return 0;
-}
 
+    if(root->left == NULL && root->right == NULL){
+        send(socket, "\t\tBook not found !", strlen("\t\tBook not found !") + 1, 0);
+        usleep(10000);
+        const char *eot = "END_OF_TRANSMISSION";
+        send(socket, eot, strlen(eot) + 1, 0);
+        return 0;
+    }
+
+    return 0;
+ 
+}
 
 
 void FetchBookNameFromISBN(struct BSTNodeBook *root, const char *ISBN, char *bookName) {
@@ -301,7 +326,6 @@ void FetchBookNameFromISBN(struct BSTNodeBook *root, const char *ISBN, char *boo
 
 
 
-// Check remaining time for book to return in days with respect to current time in days using bookName
 int CheckRemainingTimeForBookReturn(struct BSTNodeBook *root, const char *bookName) {
     if (root == NULL) {
         return INT_MAX;
@@ -321,4 +345,65 @@ int CheckRemainingTimeForBookReturn(struct BSTNodeBook *root, const char *bookNa
     int right = CheckRemainingTimeForBookReturn(root->right, bookName);
 
     return left < right ? left : right;
+}
+
+
+int returnBook(int socket, struct BSTNodeBook *root, const char *ISBN, char *username) {
+    if (root == NULL)     
+        return 0;
+    
+
+    for (int i = 0; i < root->genre.numBooks; i++) {
+        struct LibraryBook *book = &(root->genre.books[i]);
+        if (strcmp(book->ISBN, ISBN) == 0) {
+            send(socket, "\t   Book returned successfully !", strlen("\t   Book returned successfully !") + 1, 0);
+            usleep(10000);
+            book->numCopies++;
+            book->isAvailable = 1;
+            book->issueDate = 0;
+            book->returnDate = 0;
+            book->borrowerUsername = "NULL";
+            const char *eot = "END_OF_TRANSMISSION";
+            send(socket, eot, strlen(eot) + 1, 0);
+            return 1;
+        }
+
+    }
+
+    if (returnBook(socket, root->left, ISBN, username)) {
+        return 1;
+    }
+
+    if (returnBook(socket, root->right, ISBN, username)) {
+        return 1;
+    }
+
+    if(root->left == NULL && root->right == NULL){
+        send(socket, "\t\tBook not found !", strlen("\t\tBook not found !") + 1, 0);
+        usleep(10000);
+        const char *eot = "END_OF_TRANSMISSION";
+        send(socket, eot, strlen(eot) + 1, 0);
+        return 0;
+    }
+    return 0;
+}
+
+
+
+int validateISBN(const char *ISBN) {
+    if (strlen(ISBN) != 13) {
+        return 0;
+    }
+
+    int sum = 0;
+    for (int i = 0; i < 12; i++) {
+        sum += (i % 2 == 0) ? (ISBN[i] - '0') : 3 * (ISBN[i] - '0');
+    }
+
+    int checksum = 10 - (sum % 10);
+    if (checksum == 10) {
+        checksum = 0;
+    }
+
+    return checksum == (ISBN[12] - '0');
 }

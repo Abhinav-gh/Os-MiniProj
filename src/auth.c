@@ -13,7 +13,7 @@
 #include <time.h>
 
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
 
 // Function prototypes
 int authHandler(int new_socket);
@@ -55,14 +55,14 @@ User *read_user_data(const char *filename, const char *role)
     if (strcmp(role, "borrower") == 0)
     {
         
-        while (fscanf(file, "%*d %s %*s %s %*lld %*d %*d %*d %*d", tempUsername, tempPassword) == 2)
+        while (fscanf(file, "%*d %s %*s %s %*ld %*s %*s %*s %*d %*d %*d %*d", tempUsername, tempPassword) == 2)
         {
-                user = (User *)malloc(sizeof(User));
-                if (user == NULL)
-                {
-                    perror("Error allocating memory");
-                    exit(EXIT_FAILURE);
-                }
+            user = (User *)malloc(sizeof(User));
+            if (user == NULL)
+            {
+                perror("Error allocating memory");
+                exit(EXIT_FAILURE);
+            }
             strcpy(user->username, tempUsername);
             strcpy(user->password, tempPassword);
             userArr[iteration++] = *user;
@@ -115,7 +115,7 @@ int authenticate_user(const char *username, const char *password, const char *ro
         for (int i = 0; i < MAX_USERS; i++)
         {
             if (strcmp(userArr[i].username, username) == 0 && strcmp(userArr[i].password, password) == 0)
-                return 1; // User authenticated 
+                return 1; 
         }
         free(userArr);
     }

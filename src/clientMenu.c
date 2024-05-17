@@ -49,7 +49,7 @@ void send_packet(int sock, MsgPacket *packet) {
 void loginMenu(int sock) {
     int choice;
 
-    printf("----------------Login Menu----------------\n");
+    printf("\n----------------Login Menu----------------\n\n");
     printf("1.) Borrower\n");
     printf("2.) Librarian\n");
     printf("3.) Admin\n");
@@ -71,8 +71,8 @@ void handleLogin(int sock, int choice) {
     char username[MAX_NAME_LENGTH];
     char password[MAX_NAME_LENGTH];
 
-    printf("----------------Auth Menu----------------\n");
-    printf("Enter Username: ");
+    printf("\n\n----------------Auth Menu----------------\n");
+    printf("\nEnter Username: ");
     scanf("%s", username);
     printf("Enter Password: ");
     scanf("%s", password);
@@ -94,7 +94,7 @@ void handleLogin(int sock, int choice) {
             role = "admin";
             break;
         default:
-            fprintf(stderr, "Invalid choice\n");
+            fprintf(stderr, "\t    \nInvalid choice\n");
             return;
     }
 
@@ -108,7 +108,7 @@ void handleAuthentication(int sock, char *username) {
     read(sock, message, bufferMsg_SIZE);
 
     if (strcmp(message, "Authenticated") == 0) {
-        printf("Login Successful\n");
+        printf("\n\t    Login Successful !\n\n\n");
 
         if (username[0] == 'L') {
             librarianMenu(sock, username);
@@ -118,9 +118,10 @@ void handleAuthentication(int sock, char *username) {
             borrowerMenu(sock, username);
         }
     } else {
-        printf("Login Failed\n");
+        printf("\n\tLogin Failed! Please re-run the application\n\n\n");
     }
 }
+
 
 
 void clearInputBuffer() {
@@ -135,7 +136,7 @@ void borrowerMenu(int sock, char *username) {
     while(1) {
         int choice;
         printf("----------------Borrower Menu----------------\n");
-        printf("1.) Show all genres\n");
+        printf("\n1.) Show all genres\n");
         printf("2.) Show all books\n");
         printf("3.) Borrow a book\n");
         printf("4.) Return a book\n");
@@ -146,9 +147,10 @@ void borrowerMenu(int sock, char *username) {
         printf("9.) Check Due Dates\n");
         printf("10.) Logout\n");
 
-        printf("Enter your choice: ");
+        printf("\nEnter your choice (IN NUMBERS): ");
         if (scanf("%d", &choice) != 1) {
-            printf("Invalid input. Please enter a number.\n");
+            printf("\nInvalid input! PLEASE ENTER A NUMBER ONLY!\n\n\n");
+            sleep(1);
             clearInputBuffer();
             continue;
         }
@@ -158,19 +160,19 @@ void borrowerMenu(int sock, char *username) {
 
         if (choice == 3 || choice == 4) {
             char isbn[MAX_NAME_LENGTH];
-            printf("Enter the ISBN of the book: ");
+            printf("\nEnter the ISBN of the book: ");
             scanf("%99s", isbn); // Limit input to avoid buffer overflow
             clearInputBuffer();
             payload[0] = strdup(isbn);
         } else if (choice == 7) {
             char new_password[MAX_NAME_LENGTH];
-            printf("Enter your new password: ");
+            printf("\nEnter your new password: ");
             scanf("%99s", new_password); // Limit input to avoid buffer overflow
             clearInputBuffer();
             payload[0] = strdup(new_password);
         } else if (choice == 8) {
             char new_contact[MAX_NAME_LENGTH];
-            printf("Enter your new contact number: ");
+            printf("\nEnter your new contact number: ");
             scanf("%99s", new_contact); // Limit input to avoid buffer overflow
             clearInputBuffer();
             payload[0] = strdup(new_contact);
@@ -185,6 +187,44 @@ void borrowerMenu(int sock, char *username) {
         };
 
         send_packet(sock, &packet);
+        printf("\n\n-----------RECEIVED MESSAGE FROM THE SERVER-----------\n\n");
+
+        switch(choice) {
+            case 1:
+                printf("\n\t\tAll genres:\n\n");
+                break;
+            case 2:
+                printf("\n\t\tAll books:\n\n");
+                break;
+            case 3:
+                printf("\n\t\tBorrow a book:\n\n");
+                break;
+            case 4:
+                printf("\n\t\tReturn a book:\n\n");
+                break;
+            case 5:
+                printf("\n\t\tBorrowed books:\n\n");
+                break;
+            case 6:
+                printf("\n\t\tMy details:\n\n");
+                break;
+            case 7:
+                printf("\n\t\tChange password:\n\n");
+                break;
+            case 8:
+                printf("\n\t\tUpdate contact:\n\n");
+                break;
+            case 9:
+                printf("\n\t\tCheck due dates:\n\n");
+                break;
+            case 10:
+                printf("\n\t\tLogging out...\n\n");
+                break;
+            default:
+                printf("\n\t\tInvalid choice\n\n");
+                break;
+        }
+
 
         while (1) {
             ssize_t bytesRead = read(sock, bufferMsg, BUFFER_SIZE);
@@ -198,7 +238,7 @@ void borrowerMenu(int sock, char *username) {
             }
            
             if (strlen(bufferMsg) > 0) {
-                printf("Received book title: %s\n", bufferMsg);
+                printf("%s\n", bufferMsg);
             }
             
             memset(bufferMsg, 0, BUFFER_SIZE);
@@ -209,9 +249,10 @@ void borrowerMenu(int sock, char *username) {
         }
 
         if (choice == 10) {
-            printf("Logging out...\n");
             break;
         }
+
+        printf("\n\n");
 
 
         usleep(500000); 
@@ -223,7 +264,9 @@ void borrowerMenu(int sock, char *username) {
 
 
 void librarianMenu(int sock, char *username) {
-    // while (1) {
+    char bufferMsg[BUFFER_SIZE];
+
+    while (1) {
 
         int choice;
 
@@ -289,7 +332,7 @@ void librarianMenu(int sock, char *username) {
             free((void*)payload[0]);
         }
 
-    // }
+    }
 }
 
 
@@ -298,7 +341,7 @@ void librarianMenu(int sock, char *username) {
 
 
 void adminMenu(int sock, char *username) {
-    // while (1) {
+    while (1) {
         int choice;
 
         printf("----------------Admin Menu----------------\n");
@@ -366,6 +409,6 @@ void adminMenu(int sock, char *username) {
         if (payload[0]) {
             free((void*)payload[0]);
         }
-    // }
+    }
 }
 

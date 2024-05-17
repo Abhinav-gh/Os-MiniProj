@@ -21,7 +21,7 @@ volatile sig_atomic_t timeout_flag = 0; // Timeout flag
 // Function prototypes
 void connectToServer(const char *server_ip);
 void loginMenuWrapper();
-void handleTimeout(int sig);
+
 
 // Function to execute loginMenu with mutex protection
 void loginMenuWrapper() {
@@ -30,11 +30,6 @@ void loginMenuWrapper() {
     pthread_mutex_unlock(&mutex);
 }
 
-// Function to handle timeout signal
-void handleTimeout(int sig) {
-    timeout_flag = 1; // Set the timeout flag
-    printf("Timeout occurred. Exiting the loop.\n");
-}
 
 void connectToServer(const char *server_ip) {
     struct sockaddr_in serv_addr;

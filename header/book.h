@@ -6,7 +6,7 @@
 #define MAX_AUTHOR_LENGTH 50
 #define MAX_ISBN_LENGTH 20
 #define MAX_DATE_LENGTH 20
-#define MAX_BORROWER_ID_LENGTH 20
+#define MAX_BORROWER_ID_LENGTH 50
 
 
 #include <time.h>
@@ -50,9 +50,10 @@ void ReadDatabaseBook(struct BSTNodeBook **root, const char *filename);
 void ReadAllGenres(int socket , struct BSTNodeBook *root , MsgPacket* packet);
 void ReadAllBooks(int socket, struct BSTNodeBook *root, MsgPacket *packet);
 int borrowBook(int socket, struct BSTNodeBook *root, const char *ISBN, char *username);
-void FetchBookNameFromISBN(struct BSTNodeBook *root, const char *ISBN, char *bookName);\
+void FetchBookNameFromISBN(struct BSTNodeBook *root, const char *ISBN, char *bookName);
 void writeBSTToFileBook(struct BSTNodeBook *root, const char *filename);
 int CheckRemainingTimeForBookReturn(struct BSTNodeBook *root, const char *bookName);
-
+int returnBook(int socket, struct BSTNodeBook *root, const char *ISBN, char *username);
+int validateISBN(const char *ISBN);
 
 #endif /* BST_GENRE_H */

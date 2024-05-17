@@ -5,10 +5,10 @@
 
 #define PORT 8000
 #define MAX_CLIENTS 250
-#define WELCOME_MESSAGE "Welcome to the server of Online Library Management System\n"
+#define WELCOME_MESSAGE "\n\nWelcome to the server of Online Library Management System\n"
 
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
 // #define MAX_NAME_LENGTH 100
 // #define MAX_EMAIL_LENGTH 50
 // #define MAX_PASSWORD_LENGTH 50

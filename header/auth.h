@@ -4,7 +4,7 @@
 #define MAX_LINE_LENGTH 1024
 #define MAX_FILENAME_LENGTH 128
 #define MAX_USERS 100
-#define BUFFER_SIZE 1024    
+#define BUFFER_SIZE 4096 
 
 
 typedef struct {

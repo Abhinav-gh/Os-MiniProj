@@ -2,7 +2,7 @@
 #define BORROWER_H
 
 #define MAX_NAME_LENGTH 50
-#define MAX_ID_LENGTH 20
+#define MAX_ID_LENGTH 50
 #define MAX_CONTACT_LENGTH 20
 
 
