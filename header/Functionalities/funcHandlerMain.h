@@ -28,7 +28,7 @@ struct BorrowerPacket {
     char name[MAX_NAME_LENGTH];
     char password[MAX_NAME_LENGTH];
     long long int contact;
-    int ID;
+    // int ID;
     int numBorrowedBooks;
     int fine;
     int isLate;

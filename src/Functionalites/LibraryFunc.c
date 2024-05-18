@@ -99,7 +99,10 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             strcpy(newBorrower.name, borrowerPacket.name);
             strcpy(newBorrower.password, borrowerPacket.password);
             newBorrower.contact = borrowerPacket.contact;
-            newBorrower.ID = borrowerPacket.ID;
+            // Assign the id
+            int max_id=getMaxID(borrowerRoot);
+            newBorrower.ID=max_id+1;
+
             newBorrower.numBorrowedBooks = borrowerPacket.numBorrowedBooks;
             newBorrower.fine = borrowerPacket.fine;
             newBorrower.isLate = borrowerPacket.isLate;
@@ -110,6 +113,8 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             }
             // add the borrower
             borrowerRoot = insertBorrower(borrowerRoot, &newBorrower);
+            writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
+            
             send(new_socket, "Borrower added successfully", strlen("Borrower added successfully"), 0);
         }
         else if (strcmp(requestedFunc, "removeBorrower") == 0)
@@ -120,6 +125,7 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             username[valread] = '\0';
             // printf("Username: %s\n", username);
             borrowerRoot=deleteBorrower(borrowerRoot, username);
+            writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
             send(new_socket, "Borrower removed successfully", strlen("Borrower removed successfully"), 0);
         }
         else if (strcmp(requestedFunc, "logout") == 0)

@@ -18,8 +18,7 @@ int loginMenu(int sock) // returns if authenticated or not
 {
 
     int choice;
-    char username[100];
-    char password[100];
+    char username[100],password[100];
 
     printf("----------------Login Menu----------------\n");
     printf("1.) Borrower\n");
@@ -84,9 +83,9 @@ void BorrowerMenuPrinter()
     printf("3.) View all books\n");
     printf("4.) Search a book\n");
     printf("5.) Pay fine\n");
-    printf("99.) Logout\n\n");
+    printf("99.) Logout\n");
     printf("100.) Show menu again\n\n");
-    printf("Enter your choice: ");
+    printf("Enter your choice: (99:Logout ; 100: Menu)");
 }
 void LibraryMenuPrinter()
 {
@@ -97,9 +96,9 @@ void LibraryMenuPrinter()
     printf("4.) View all borrowers\n");
     printf("5.) Add new borrowers\n");
     printf("7.) Remove a borrowers\n");
-    printf("8.) Logout\n\n");
-    printf("6.) Show menu again\n\n");
-    printf("Enter your choice: ");
+    printf("99.) Logout\n");
+    printf("100.) Show menu again\n\n");
+    printf("Enter your choice: (99:Logout ; 100: Menu)");
 }
 void AdminMenuPrinter()
 {
@@ -108,17 +107,30 @@ void AdminMenuPrinter()
     printf("2.) Remove a librarian\n");
     printf("3.) View all librarians\n");
     printf("4.) View all borrowers\n");
-    printf("5.) Logout\n\n");
-    printf("6.) Show menu again\n\n");
-    printf("Enter your choice: ");
+    printf("99.) Logout\n");
+    printf("100.) Show menu again\n\n");
+    printf("Enter your choice: (99:Logout ; 100: Menu)");
+}
+void ResponseHandler(int sock, int choice)
+{
+    // Listen for incoming messages from the server
+        memset(message, 0, sizeof(message));
+        read(sock, message, BUFFER_SIZE);
+        if(choice==99)
+        {
+            printf("Thank you for using our application.\n Take care!\n");
+            return;
+        }
+        printf("%s\n", message); // server tells if authenticated or not
+        printf("Enter your choice: (99:Logout ; 100: Menu)");
 }
 
 void AdminMenu(int sock)
 {
     send(sock, "admin", strlen("admin"), 0); // send role to server
     AdminMenuPrinter();
-    int choice;
-    while (choice != 5)
+    int choice=0;
+    while (choice != 99)
     {
 
         scanf("%d", &choice);
@@ -137,20 +149,17 @@ void AdminMenu(int sock)
         case 4:
             send(sock, "viewBorrowers", strlen("viewBorrowers"), 0);
             break;
-        case 5:
+        case 99:
             send(sock, "logout", strlen("logout"), 0);
             break;
-        case 6:
+        case 100:
             AdminMenuPrinter();
             continue;
         default:
             printf("Invalid choice\n");
         }
 
-        // Listen for incoming messages from the server
-        read(sock, message, BUFFER_SIZE);
-        printf("%s\n", message); // server tells if authenticated or not
-        printf("Enter your choice: ");
+        ResponseHandler(sock,choice);
     }
 }
 void BorrowerMenu(int sock)
@@ -158,7 +167,7 @@ void BorrowerMenu(int sock)
     send(sock, "borrower", strlen("borrower"), 0); // send role to server
     BorrowerMenuPrinter();
 
-    int choice;
+    int choice=0;
 
     while (choice != 99)
     {
@@ -170,10 +179,9 @@ void BorrowerMenu(int sock)
             // take the isbn, genre and username of the borrower
             send(sock, "borrow", strlen("borrow"), 0);
             printf("Enter the ISBN of the book you want to borrow: ");
-            char isbnToBorrow[100];
+            char isbnToBorrow[100],genreToBorrow[100];
             scanf("%s", isbnToBorrow);
             printf("Enter the genre of the book you want to borrow: ");
-            char genreToBorrow[100];
             scanf("%s", genreToBorrow);
             send(sock, isbnToBorrow, strlen(isbnToBorrow), 0);
             usleep(100000);
@@ -185,10 +193,9 @@ void BorrowerMenu(int sock)
             send(sock, "return", strlen("return"), 0);
             // take the isbn, genre and username of the borrower
             printf("Enter the ISBN of the book you want to return: ");
-            char isbnToReturn[100];
+            char isbnToReturn[100],genreToReturn[100];
             scanf("%s", isbnToReturn);
             printf("Enter the genre of the book you want to return: ");
-            char genreToReturn[100];
             scanf("%s", genreToReturn);
             // send the isbn, genre and username to server
             send(sock, isbnToReturn, strlen(isbnToReturn), 0);
@@ -197,7 +204,7 @@ void BorrowerMenu(int sock)
             usleep(100000);
             send(sock, clientUsername, strlen(clientUsername), 0);
             usleep(100000);
-isfineCalculated=1;
+            isfineCalculated = 1;
             break;
         case 3:
             send(sock, "view", strlen("view"), 0);
@@ -205,25 +212,24 @@ isfineCalculated=1;
         case 4:
             send(sock, "search", strlen("search"), 0);
             printf("Enter the book ISBN you want to search: ");
-            char isbn[100];
+            char isbn[100],genre[100];
             scanf("%s", isbn);
             send(sock, isbn, strlen(isbn), 0);
             printf("Enter the genre of the book: ");
-            char genre[100];
             scanf("%s", genre);
             send(sock, genre, strlen(genre), 0);
             break;
         case 5:
             // pay fine. send username and recieve fine from server
             send(sock, "payFine", strlen("payFine"), 0);
-            usleep(100000); 
-            send(sock,&isfineCalculated, sizeof(int), 0);
-            //clear message
+            usleep(100000);
+            send(sock, &isfineCalculated, sizeof(int), 0);
+            // clear message
             memset(message, 0, sizeof(message));
             recv(sock, message, BUFFER_SIZE, 0);
             message[strlen(message)] = '\0';
             printf("%s.", message);
-            if(strcmp(message, "Fine not calculated. First go to return") == 0)
+            if (strcmp(message, "Fine not calculated. First go to return") == 0)
             {
                 printf("Fine not calculated. First go to return\n");
                 break;
@@ -247,10 +253,7 @@ isfineCalculated=1;
                     // make user pay fine. Verify the same
                     int userfine;
                     scanf("%d", &userfine);
-                    if (userfine == fine)
-                    {
-                    }
-                    else if (userfine < fine)
+                    if (userfine < fine)
                     {
                         printf("Amount paid is less than the fine\n");
                         send(sock, "Fine not paid", strlen("Fine not paid"), 0);
@@ -276,25 +279,19 @@ isfineCalculated=1;
             BorrowerMenuPrinter();
             continue;
         default:
-            printf("Invalid choice\n");
+            printf("Invalid choice. Try again\n");
         }
-        // Listen for incoming messages from the server
-        read(sock, message, BUFFER_SIZE);
-        if (choice == 99)
-        {
-            printf("Thank you for using our application.\n Take care!\n");
-            return;
-        }
-        printf("%s\n", message); // server tells if authenticated or not
-        printf("Enter your choice: ");
+
+        ResponseHandler(sock,choice);
+        
     }
 }
 void LibrarianMenu(int sock)
 {
     send(sock, "librarian", strlen("librarian"), 0); // send role to server
     LibraryMenuPrinter();
-    int choice;
-    while (choice != 8)
+    int choice=0;
+    while (choice != 99)
     {
         scanf("%d", &choice);
 
@@ -303,10 +300,7 @@ void LibrarianMenu(int sock)
         case 1:
             send(sock, "add", strlen("add"), 0);
 
-            char title[100];
-            char author[100];
-            char ISBN[100];
-            char genre[100];
+            char title[100],author[100],ISBN[100],genre[100];
             int numCopies, isAvailable, yearPublished;
             printf("Enter the genre of the book: ");
             scanf("%s", genre);
@@ -351,10 +345,6 @@ void LibrarianMenu(int sock)
             scanf("%s", arr[0]);
             printf("Enter the genre of the book you want to remove: ");
             scanf("%s", arr[1]);
-            // print arr
-            // printf("arr[0]: %s\n", arr[0]);
-            // printf("arr[1]: %s\n", arr[1]);
-            // send the 2d array to server
             printf("sending...\n");
             send(sock, arr[0], strlen(arr[0]), 0);
             usleep(100000);
@@ -369,20 +359,15 @@ void LibrarianMenu(int sock)
         case 5:
             send(sock, "addBorrower", strlen("addBorrower"), 0);
             printf("Enter the username of the borrower: ");
-            char username[100];
+            char username[100],name[100],password[100];
             scanf("%s", username);
             printf("Enter the name of the borrower: ");
-            char name[100];
             scanf("%s", name);
             printf("Enter the password of the borrower: ");
-            char password[100];
             scanf("%s", password);
             printf("Enter the contact of the borrower: ");
             long long int contact;
             scanf("%lld", &contact);
-            printf("Enter the ID of the borrower: ");
-            int ID;
-            scanf("%d", &ID);
             // now make a borrower struct and send it to server
             struct BorrowerPacket borrowerpacket;
             // add data to bookpacket
@@ -390,8 +375,7 @@ void LibrarianMenu(int sock)
             strcpy(borrowerpacket.name, name);
             strcpy(borrowerpacket.password, password);
             borrowerpacket.contact = contact;
-            borrowerpacket.ID = ID;
-            // set borrowed boos array to null
+            //server assigns ID and sets borrowed books array to null
             borrowerpacket.numBorrowedBooks = 0;
             borrowerpacket.fine = 0;
             borrowerpacket.isLate = 0;
@@ -400,7 +384,7 @@ void LibrarianMenu(int sock)
             printf("Name: %s\n", borrowerpacket.name);
             printf("Password: %s\n", borrowerpacket.password);
             printf("Contact: %lld\n", borrowerpacket.contact);
-            printf("ID: %d\n", borrowerpacket.ID);
+            printf("ID: Is being assigned by server. Check later\n");
             printf("Num Borrowed Books: %d\n", borrowerpacket.numBorrowedBooks);
             printf("Fine: %d\n", borrowerpacket.fine);
             printf("Is Late: %d\n", borrowerpacket.isLate);
@@ -417,25 +401,17 @@ void LibrarianMenu(int sock)
             // send the username to server
             send(sock, usernameToRemove, strlen(usernameToRemove), 0);
             break;
-        case 8:
+        case 99:
             send(sock, "logout", strlen("logout"), 0);
             break;
-        case 6:
+        case 100:
             LibraryMenuPrinter();
             continue;
         default:
             printf("Invalid choice\n");
         }
 
-        // Listen for incoming messages from the server
-        read(sock, message, BUFFER_SIZE);
-        if (choice == 8)
-        {
-            printf("Thank you for using our application.\n Take care!\n");
-            return;
-        }
-        printf("%s\n", message); // server tells if authenticated or not
-        printf("Enter your choice: ");
+        ResponseHandler(sock,choice);
     }
 }
 // ------------->>>>> Finished adding by Abhinav  <<<<<<<<<<<<------------

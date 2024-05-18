@@ -136,6 +136,27 @@ void freeBorrower(struct Borrower *borrower)
     free(borrower);
 }
 
+//Function to gt the maximum id currently in bst
+int getMaxID(struct BSTNodeBorrower *root)
+{
+    if (root == NULL)
+    {
+        return 0;
+    }
+    int max = root->data.ID;
+    int leftMax = getMaxID(root->left);
+    int rightMax = getMaxID(root->right);
+    if (leftMax > max)
+    {
+        max = leftMax;
+    }
+    if (rightMax > max)
+    {
+        max = rightMax;
+    }
+    return max;
+}
+
 // insert a new borrower into the BST
 struct BSTNodeBorrower *insertBorrower(struct BSTNodeBorrower *root, struct Borrower *borrower)
 {

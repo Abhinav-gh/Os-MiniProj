@@ -9,20 +9,6 @@
 #include "../header/client.h"
 #include "../header/clientMenu.h"
 
-// Thread synchronization variables
-pthread_mutex_t mutex;
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-
-// Global variables
-char buffer[BUFFER_SIZE] = {0};
-int sock = 0;
-
-// ---------->>>>>>>>> Added by Abhinav <<<<<<<<<<----------
-int isAuthenticated = 0;
-// Function prototypes
-void connectToServer(const char *server_ip);
-void loginMenuWrapper();
-
 // Function to execute loginMenu with mutex protection
 void loginMenuWrapper()
 {
@@ -62,7 +48,6 @@ void connectToServer(const char *server_ip)
 
     loginMenuWrapper(); // Call loginMenu through the wrapper function
 }
-// --->>>>>>>ADDED BY ABHINAV <<<<<<----
 void FunctionalityMenu(int role)
 {
     role == -1 ? perror("Role not recognized by server\n") : NULL; // error handling
@@ -73,7 +58,7 @@ void FunctionalityMenu(int role)
     pthread_mutex_unlock(&mutex);
 }
 
-FunctionalityMenuWrapper()
+void FunctionalityMenuWrapper()
 {
     int role = -1;
     if (isAuthenticated)
