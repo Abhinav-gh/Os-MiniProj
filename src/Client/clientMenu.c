@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <pthread.h>
-#include "../header/clientMenu.h"
+#include "../../header/clientMenu.h"
 
 #define BUFFER_SIZE 1024
 char clientUsername[BUFFER_SIZE] = {0};

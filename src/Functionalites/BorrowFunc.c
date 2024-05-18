@@ -209,7 +209,7 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
             username[valread] = '\0';
             // printf("Username: %s\n", username);
             char * borrowedBooksInfo = getAllBorrowedBooks(borrowerRoot,username);
-            printf("Borrowed Books Info: %s\n", borrowedBooksInfo);
+            // printf("Borrowed Books Info: %s\n", borrowedBooksInfo);
             if(borrowedBooksInfo==NULL){
                 send(new_socket, "No borrowed books", strlen("No borrowed books"), 0);
                 continue;

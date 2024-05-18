@@ -6,8 +6,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <pthread.h> // Include pthread library for threading
-#include "../header/client.h"
-#include "../header/clientMenu.h"
+#include "../../header/client.h"
+#include "../../header/clientMenu.h"
 
 // Function to execute loginMenu with mutex protection
 void loginMenuWrapper()
