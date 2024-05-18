@@ -33,6 +33,15 @@ struct BorrowerPacket {
     int fine;
     int isLate;
 };
+
+//For database thread operation
+typedef struct {
+    struct BSTNodeBook *root;
+    char filepath[256];
+} WriteArgs;
+
+
+
 // #define BUFFER_SIZE 4096*4   
 
 #endif

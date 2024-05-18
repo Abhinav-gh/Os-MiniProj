@@ -1,5 +1,19 @@
 #include "../../header/Functionalities/funcHandlerMain.h"
 
+void writeBSTToFileWrapper(void *args)
+{
+    WriteArgs *writeArgs = (WriteArgs *)args;
+    struct BSTNodeBook *root = writeArgs->root;
+    char *filepath = writeArgs->filepath;
+    pthread_rwlock_wrlock(&rwlock);
+    int result = writeBSTToFile(root, filepath);
+    pthread_rwlock_wrlock(&rwlock);
+    if(result == -1){
+        perror("Failed to write to file");
+    }
+    free(writeArgs); // Free the allocated memory for arguments
+    return NULL;
+}
 void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorrower *borrowerRoot)
 {
     printf("Control passed to src/Functionalities/LibraryFunc.c \n");
@@ -35,10 +49,36 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             time_t t = time(NULL);
             newBook.issueDate = t;
             newBook.returnDate = 0;
+            // if (valread > 0)
+            // {
+            //     addBook(&root, genre, &newBook);
+            //     //THIS IS A DATABASE OPERATION AND MUST BE PROTECTED BY A LOCK. IT SHOULD BE DONE IN A SEPARATE THREAD
+
+            //     // writeBSTToFile(root, "../database/Books/books.txt");
+            //     // send(new_socket, "Book added successfully", strlen("Book added successfully"), 0);
+
+            //     // Doing in separate thread
+            //     pthread_t tid;
+            //     pthread_create(&tid, NULL, writeBSTToFile, root);
+            //     send(new_socket, "Book added successfully", strlen("Book added successfully"), 0);
+            // }
             if (valread > 0)
             {
                 addBook(&root, genre, &newBook);
-                writeBSTToFile(root, "../database/Books/books.txt");
+
+                // Allocate memory for arguments
+                WriteArgs *writeArgs = malloc(sizeof(WriteArgs));
+                writeArgs->root = root;
+                strncpy(writeArgs->filepath, "../database/Books/books.txt", sizeof(writeArgs->filepath));
+
+                // Create a thread to write to the file
+                pthread_t tid;
+                pthread_create(&tid, NULL, writeBSTToFileWrapper, (void *)writeArgs);
+
+                // Wait for the thread to finish
+                pthread_join(tid, NULL);
+
+                // Send the response after the write operation is done
                 send(new_socket, "Book added successfully", strlen("Book added successfully"), 0);
             }
             else
@@ -99,8 +139,8 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             strcpy(newBorrower.password, borrowerPacket.password);
             newBorrower.contact = borrowerPacket.contact;
             // Assign the id
-            int max_id=getMaxID(borrowerRoot);
-            newBorrower.ID=max_id+1;
+            int max_id = getMaxID(borrowerRoot);
+            newBorrower.ID = max_id + 1;
 
             newBorrower.numBorrowedBooks = borrowerPacket.numBorrowedBooks;
             newBorrower.fine = borrowerPacket.fine;
@@ -113,21 +153,21 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             // add the borrower
             borrowerRoot = insertBorrower(borrowerRoot, &newBorrower);
             writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
-            
+
             send(new_socket, "Borrower added successfully", strlen("Borrower added successfully"), 0);
         }
         else if (strcmp(requestedFunc, "removeBorrower") == 0)
         {
-            //take the username of the borrower to be removed
+            // take the username of the borrower to be removed
             char username[BUFFER_SIZE] = {0};
             int valread = read(new_socket, username, BUFFER_SIZE);
             username[valread] = '\0';
             // printf("Username: %s\n", username);
-            borrowerRoot=deleteBorrower(borrowerRoot, username);
+            borrowerRoot = deleteBorrower(borrowerRoot, username);
             writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
             send(new_socket, "Borrower removed successfully", strlen("Borrower removed successfully"), 0);
         }
-        
+
         else if (strcmp(requestedFunc, "logout") == 0)
         {
             // logout

@@ -1,5 +1,18 @@
 #include "../../header/Functionalities/funcHandlerMain.h"
-
+// void writeBSTToFileWrapper(void *args)
+// {
+//     WriteArgs *writeArgs = (WriteArgs *)args;
+//     struct BSTNodeBook *root = writeArgs->root;
+//     char *filepath = writeArgs->filepath;
+//     pthread_rwlock_wrlock(&rwlock);
+//     int result = writeBSTToFile(root, filepath);
+//     pthread_rwlock_wrlock(&rwlock);
+//     if(result == -1){
+//         perror("Failed to write to file");
+//     }
+//     free(writeArgs); // Free the allocated memory for arguments
+//     return NULL;
+// }
 void borrowerFunc(int new_socket, struct BSTNodeBook *root)
 {
     printf("Control passed to src/Functionalities/BorrowFunc.c \n");
@@ -16,7 +29,7 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
         if (strcmp(requestedFunc, "borrow") == 0)
         {
             // get the isbn and genere of the book from client. Also get the username from the client
-            char isbn[BUFFER_SIZE] = {0},genre[BUFFER_SIZE] = {0},username[BUFFER_SIZE] = {0};
+            char isbn[BUFFER_SIZE] = {0}, genre[BUFFER_SIZE] = {0}, username[BUFFER_SIZE] = {0};
             int valread = read(new_socket, buffer, BUFFER_SIZE);
             buffer[valread] = '\0';
             strncpy(isbn, buffer, BUFFER_SIZE - 1);
@@ -46,9 +59,24 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
 
                 if (result == 0)
                 {
-                    // update the file
+                    // update the file. NOTE THAT THIS IS A DATABASE OPERATION AND SHOULD BE PROTECTED BY A LOCK
+
+                    // Acquire the write lock
+                //     WriteArgs *writeArgs = malloc(sizeof(WriteArgs));
+                // writeArgs->root = root;
+                // strncpy(writeArgs->filepath, "../database/Books/books.txt", sizeof(writeArgs->filepath));
+                    pthread_rwlock_wrlock(&rwlock);
+
+                    // CRITICAL SECTION. WRITE TO FILE
+                    // Create a thread to write to the file
+                // pthread_t tid;
+                // pthread_create(&tid, NULL, writeBSTToFileWrapper, (void *)writeArgs);
                     writeBSTToFile(root, "../database/Books/books.txt");
                     writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
+
+                    // Release the write lock
+                    pthread_rwlock_unlock(&rwlock);
+
                     send(new_socket, "Book borrowed successfully", strlen("Book borrowed successfully"), 0);
                 }
                 else if (result == -1)
@@ -62,6 +90,9 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
                 else if (result == -3)
                 {
                     send(new_socket, "Book not available", strlen("Book not available"), 0);
+                }
+                else if(result == -4){
+                    send(new_socket, "This book already borrowed by this user", strlen("This book already borrowed by this user"), 0);
                 }
                 else if (result == 1)
                 {
@@ -106,9 +137,17 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
             }
             else
             {
+                // THIS IS A DATABASE OPERATION AND SHOULD BE PROTECTED BY A LOCK
+
+                // Acquire the write lock
+                pthread_rwlock_wrlock(&rwlock);
+
                 // update the file
                 writeBSTToFile(root, "../database/Books/books.txt");
                 writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
+
+                // Release the write lock
+                pthread_rwlock_unlock(&rwlock);
                 send(new_socket, "Book returned successfully", strlen("Book returned successfully"), 0);
             }
         }
@@ -160,11 +199,11 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
                 // printf("ere\n");
                 send(new_socket, "Fine not calculated. ", strlen("Fine not calculated. "), 0);
                 usleep(100000);
-                //send something empty
+                // send something empty
                 send(new_socket, "First go to return", strlen("First go to return"), 0);
                 // send(new_socket, "Fine not calculated. First go to return", strlen("Fine not calculated. First go to return"), 0);
             }
-            else if(isfineCalculated == 1)
+            else if (isfineCalculated == 1)
             {
                 // printf("Fine calculated\n");
                 send(new_socket, "Fine calculated", strlen("Fine calculated"), 0);
@@ -200,7 +239,14 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
                     if (strcmp(confirmation, "Fine paid") == 0)
                     {
                         resetFines(borrower);
+
+                        // THIS IS A DATABASE OPERATION AND SHOULD BE PROTECTED BY A LOCK
+
+                        // Acquire the write lock
+                        pthread_rwlock_wrlock(&rwlock);
                         writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
+                        // Release the write lock
+                        pthread_rwlock_unlock(&rwlock);
                         send(new_socket, "Fine paid successfully", strlen("Fine paid successfully"), 0);
                     }
                     else
@@ -210,14 +256,16 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
                 }
             }
         }
-        else if(strcmp(requestedFunc, "viewBorrowedBooks")==0){
+        else if (strcmp(requestedFunc, "viewBorrowedBooks") == 0)
+        {
             char username[BUFFER_SIZE] = {0};
             int valread = read(new_socket, username, BUFFER_SIZE);
             username[valread] = '\0';
             // printf("Username: %s\n", username);
-            char * borrowedBooksInfo = getAllBorrowedBooks(borrowerRoot,username);
+            char *borrowedBooksInfo = getAllBorrowedBooks(borrowerRoot, username);
             // printf("Borrowed Books Info: %s", borrowedBooksInfo);
-            if(strcmp(borrowedBooksInfo,"")==0){
+            if (strcmp(borrowedBooksInfo, "") == 0)
+            {
                 send(new_socket, "No borrowed books", strlen("No borrowed books"), 0);
                 continue;
             }

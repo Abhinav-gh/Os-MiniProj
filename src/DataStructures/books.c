@@ -288,6 +288,15 @@ int borrowBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN
     {
         if (book->numCopies > 0)
         {
+            // if the user has already borrowed this book then dont allow to borrow again
+            for (int i = 0; i < borrower->numBorrowedBooks; i++)
+            {
+                if (borrower->borrowedBooks[i] == book)
+                {
+                    printf("Book already borrowed\n");
+                    return -4;
+                }
+            }
             book->numCopies--; // Decrement number of copies
             if (book->numCopies == 0)
             {
@@ -392,13 +401,6 @@ int returnBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN
                 book->numCopies++;
                 book->issueDate = 0;  // Reset issue date
                 book->returnDate = 0; // Reset return date
-                // book->borrower = (struct Borrower){0};
-                // for (int j = i; j < borrower->numBorrowedBooks - 1; j++)
-                // {
-                //     borrower->borrowedBooks[j] = borrower->borrowedBooks[j + 1];
-                // }
-                // remove the book from borrower'sborrowedBooks
-                // the books are currently added to this array struct LibraryBook* borrowedBooks[3];. Remove the book from this array
                 borrower->borrowedBooks[i] = NULL;
                 borrower->numBorrowedBooks--;
                 printf("Book returned successfully\n");
@@ -494,18 +496,19 @@ void writeBSTToFileHelper(struct BSTNodeBook *root, FILE *file)
 }
 
 // Function to write BST to file
-void writeBSTToFile(struct BSTNodeBook *root, const char *filename)
+int writeBSTToFile(struct BSTNodeBook *root, const char *filename)
 {
     FILE *file = fopen(filename, "w");
     if (file == NULL)
     {
         printf("Error opening file.\n");
-        return;
+        return -1;
     }
 
     writeBSTToFileHelper(root, file);
 
     fclose(file);
+    return 0;
 }
 
 struct BSTNodeBook *root = NULL;

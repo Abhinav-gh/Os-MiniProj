@@ -1,4 +1,15 @@
 #include "../../header/Functionalities/funcHandlerMain.h"
+#include <pthread.h>
+
+// Declare a global read-write lock
+pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
+void initializeLocks() {
+    if (pthread_rwlock_init(&rwlock, NULL) != 0) {
+        perror("Failed to initialize read-write lock");
+        exit(EXIT_FAILURE);
+    }
+}
+
 #include "../DataStructures/books.c"
 #include "../DataStructures/borrower.c"
 #include "./BorrowFunc.c"
@@ -9,6 +20,8 @@
 void funcHandler(int new_socket){
     initializeBooks();
     initializeBorrower();
+    initializeLocks();
+    printf("Pthreads Read-write locks initialized and can now be used\n");
     char role[BUFFER_SIZE] = {0};
     char buffer[BUFFER_SIZE] = {0};
     // read the role coming from the client
