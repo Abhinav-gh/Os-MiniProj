@@ -117,6 +117,7 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
             // view all books
             char *booksInfo = getAllBooksInfoWrapper(root);
             send(new_socket, booksInfo, strlen(booksInfo), 0);
+            usleep(100000);
             free(booksInfo);
         }
         else if (strcmp(requestedFunc, "search") == 0)
@@ -201,6 +202,21 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
                     }
                 }
             }
+        }
+        else if(strcmp(requestedFunc, "viewBorrowedBooks")==0){
+            char username[BUFFER_SIZE] = {0};
+            int valread = read(new_socket, username, BUFFER_SIZE);
+            username[valread] = '\0';
+            // printf("Username: %s\n", username);
+            char * borrowedBooksInfo = getAllBorrowedBooks(borrowerRoot,username);
+            printf("Borrowed Books Info: %s\n", borrowedBooksInfo);
+            if(borrowedBooksInfo==NULL){
+                send(new_socket, "No borrowed books", strlen("No borrowed books"), 0);
+                continue;
+            }
+            send(new_socket, borrowedBooksInfo, strlen(borrowedBooksInfo), 0);
+            // usleep(100000);
+            // send(new_socket, "Viewed")
         }
         else if (strcmp(requestedFunc, "logout") == 0)
         {

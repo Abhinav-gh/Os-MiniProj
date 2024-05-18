@@ -240,6 +240,7 @@ char *getAllBorrowersInfoWrapper(struct BSTNodeBorrower *root)
 }
 
 
+
 // Function to search for a borrower in the BST
 struct BSTNodeBorrower *searchBorrower(struct BSTNodeBorrower *root, const char *username)
 {
@@ -318,6 +319,33 @@ struct BSTNodeBorrower *deleteBorrower(struct BSTNodeBorrower *root, const char 
     return root;
 }
 
+//Function to getAll borrowed books of a borrower
+char *getAllBorrowedBooks(struct BSTNodeBorrower *root, const char *username)
+{
+    struct BSTNodeBorrower *node = searchBorrower(root, username);
+    if (node == NULL)
+    {
+        return NULL;
+    }
+    char *borrowedBooks = (char *)malloc(2 * BUFFER_SIZE * sizeof(char));
+    if (borrowedBooks == NULL)
+    {
+        perror("Error allocating memory");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(borrowedBooks, "");
+    for (int i = 0; i < node->data.numBorrowedBooks; i++)
+    {
+        sprintf(borrowedBooks + strlen(borrowedBooks), "Title: %s\n", node->data.borrowedBooks[i]->title);
+        sprintf(borrowedBooks + strlen(borrowedBooks), "Author: %s\n", node->data.borrowedBooks[i]->author);
+        sprintf(borrowedBooks + strlen(borrowedBooks), "ISBN: %s\n", node->data.borrowedBooks[i]->ISBN);
+        sprintf(borrowedBooks + strlen(borrowedBooks), "Year Published: %d\n", node->data.borrowedBooks[i]->yearPublished);
+        sprintf(borrowedBooks + strlen(borrowedBooks), "Quantity: %d\n", node->data.borrowedBooks[i]->numCopies);
+        sprintf(borrowedBooks + strlen(borrowedBooks), "Available: %d\n", node->data.borrowedBooks[i]->isAvailable);
+        sprintf(borrowedBooks + strlen(borrowedBooks), "\n");
+    }
+    return borrowedBooks;
+}
 // Function to free memory allocated for the BST
 void freeBSTBorrowers(struct BSTNodeBorrower *root)
 {

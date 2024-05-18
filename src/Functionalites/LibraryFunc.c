@@ -127,6 +127,7 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
             send(new_socket, "Borrower removed successfully", strlen("Borrower removed successfully"), 0);
         }
+        
         else if (strcmp(requestedFunc, "logout") == 0)
         {
             // logout
