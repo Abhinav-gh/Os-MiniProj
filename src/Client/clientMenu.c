@@ -154,6 +154,9 @@ void payFine(int sock, int fine)
                 printf("Amount paid is more. Returning: %d\n", userfine - fine);
             }
             send(sock, "Fine paid", strlen("Fine paid"), 0);
+        } else {
+            send(sock, "Fine not paid", strlen("Fine not paid"), 0);
+            return;
         }
     }
 }
