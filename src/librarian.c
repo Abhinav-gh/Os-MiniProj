@@ -128,15 +128,98 @@ void WriteLibrarian(struct BSTNodeLibrarian  **root, const char *filename) {
     fclose(file);
 }
 
+// function to set the login status of a librarian
+void setLoginStatusLibr(struct BSTNodeLibrarian* root, const char* username, int status) {
+    if (root == NULL) {
+        return;
+    }
+
+    if (strcmp(username, root->data.username) == 0) {
+        root->data.LoginStatus = status;
+        return;
+    }
+
+    if (strcmp(username, root->data.username) < 0) {
+        setLoginStatusLibr(root->left, username, status);
+    } else {
+        setLoginStatusLibr(root->right, username, status);
+    }
+}
 
 
+void traverseAndSend(int socket, struct BSTNodeLibrarian* root, char* buffer, int* count) {
+    if (root == NULL) {
+        return;
+    }
+
+    traverseAndSend(socket, root->left, buffer, count);
+
+    if (root->data.LoginStatus) {
+        int len = snprintf(buffer, BUFFER_SIZE, "Username: %s, Name: %s, Email: %s, LoginStatus: %d\n",
+                           root->data.username, root->data.name, root->data.email, root->data.LoginStatus);
+        if (len < 0) {
+            perror("snprintf failed");
+            return;
+        }
+        if (send(socket, buffer, len, 0) == -1) {
+            perror("send failed");
+            return;
+        }
+        usleep(1000);
+        (*count)++;
+    }
+
+    traverseAndSend(socket, root->right, buffer, count);
+}
+
+void showAllLibrariansLoggedIn(int socket, struct BSTNodeLibrarian* root) {
+    char* buffer = (char*)malloc(BUFFER_SIZE);
+    if (buffer == NULL) {
+        perror("Failed to allocate buffer");
+        return;
+    }
+
+    int count = 0;
+    traverseAndSend(socket, root, buffer, &count);
+
+    if (count == 0) {
+        const char* msg = "No librarians logged in\n";
+        if (send(socket, msg, strlen(msg), 0) == -1) {
+            perror("send failed");
+            free(buffer);
+            return;
+        }
+        usleep(1000);
+    }
+
+    const char* eot = "END_OF_TRANSMISSION";
+    if (send(socket, eot, strlen(eot), 0) == -1) {
+        perror("send failed");
+    }
+
+    free(buffer);
+}
+
+
+//TODO: Implement the librarianPacketHandler function
 void librarianPacketHandler(int new_socket, MsgPacket *packet) {
+
+    int isAvailable = 0;
+    int id = 0;
 
     struct BSTNodeBorrower *rootborrower = NULL;
     ReadDatabaseBorrower(&rootborrower, "../database/users/borrower.txt");
 
     struct BSTNodeBook *rootbook = NULL;
     ReadDatabaseBook(&rootbook, "../database/Books/books.txt");
+
+    struct BSTNodeLibrarian *rootlibrarian = NULL;
+    ReadDatabaseLibrarian(&rootlibrarian, "../database/users/librarian.txt");
+
+
+    setLoginStatusLibr(rootlibrarian, packet->username, 1);
+
+    
 
     switch(packet->choice)
     {
@@ -147,7 +230,6 @@ void librarianPacketHandler(int new_socket, MsgPacket *packet) {
             break;
 
         case 2:
-            //Delete book
             deleteBook(new_socket, &rootbook, packet->payload[0]);
             writeBSTToFileBook(rootbook, "../database/Books/books.txt");
             break;
@@ -168,12 +250,28 @@ void librarianPacketHandler(int new_socket, MsgPacket *packet) {
             break;
 
         case 7:
-            //show fines of a borrower
+            // id = getMaxUserID(rootborrower) + 1;
+            // insertBorrower(&rootborrower, createBorrower(new_socket, packet->payload[1], packet->payload[0], packet->payload[2], atoll(packet->payload[3]), id));
+            // WriteDatabaseBorrower(rootborrower, "../database/users/borrower.txt");
             break;
 
+        case 8:
+            deleteBorrower(new_socket, &rootborrower, packet->payload[0]);
+            WriteDatabaseBorrower(rootborrower, "../database/users/borrower.txt");
+            break;
 
+        case 9:
+            showAllBorrowersLoggedIn(new_socket, rootborrower);
+            break;
 
+        case 10:
+            showAllLibrariansLoggedIn(new_socket, rootlibrarian);
+            break;
 
+        case 11:
+            setLoginStatusLibr(rootlibrarian, packet->username, 0);
+            logout(new_socket);
+            break;
     }
 }
 

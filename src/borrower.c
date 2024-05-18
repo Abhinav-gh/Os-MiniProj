@@ -309,6 +309,8 @@ void logout(int socket) {
 }
 
 
+
+
 void borrowBookUserUpdate(struct BSTNodeBorrower *root, char *username, const char *ISBN, struct BSTNodeBook *rootbook) {
     if (root == NULL) {
         return;
@@ -467,6 +469,80 @@ void showAllBorrowers(int socket, struct BSTNodeBorrower *root) {
         send(socket, eot, strlen(eot) + 1, 0);
     }
 }
+
+// show all the borrower logged in
+void showAllBorrowersLoggedIn(int socket, struct BSTNodeBorrower *root) {
+    if (root == NULL) {
+        return;
+    }
+
+    showAllBorrowersLoggedIn(socket, root->left);
+
+    if (root->data.LoginStatus == 1) {
+        char buffer[BUFFER_SIZE];
+        sprintf(buffer, "Username: %s\nName: %s\nContact: %lld\nFine: %d\nLate: %d\nNumber of Books borrowed: %d\n\n", 
+                root->data.username, root->data.name, root->data.contact, root->data.fine, root->data.isLate, root->data.numBorrowedBooks);
+        send(socket, buffer, strlen(buffer), 0);
+        usleep(10000);
+        const char *eot = "END_OF_TRANSMISSION";
+        send(socket, eot, strlen(eot) + 1, 0);
+        usleep(10000);
+
+        return;
+    }
+
+    showAllBorrowersLoggedIn(socket, root->right);
+    // Send the end of transmission message after the entire traversal
+    if (root->left == NULL && root->right == NULL) {
+        send(socket,"\t    No borrowers logged in\n",strlen("\t    No borrowers logged in\n"),0);
+        const char *eot = "END_OF_TRANSMISSION";
+        send(socket, eot, strlen(eot) + 1, 0);
+    }
+    return;
+}
+
+// Find the minimum node in the BST
+struct BSTNodeBorrower *FindMinBorrower(struct BSTNodeBorrower *root) {
+    struct BSTNodeBorrower *current = root;
+    while (current && current->left != NULL) {
+        current = current->left;
+    }
+    return current;
+}
+
+// Delete a borrower from the BST and send message and EOT to the client
+void deleteBorrower(int socket, struct BSTNodeBorrower **root, const char *username) {
+    if (*root == NULL) {
+        return;
+    }
+
+    if (strcmp(username, (*root)->data.username) < 0) {
+        deleteBorrower(socket, &((*root)->left), username);
+    } else if (strcmp(username, (*root)->data.username) > 0) {
+        deleteBorrower(socket, &((*root)->right), username);
+    } else {
+        if ((*root)->left == NULL && (*root)->right == NULL) {
+            free(*root);
+            *root = NULL;
+        } else if ((*root)->left == NULL) {
+            struct BSTNodeBorrower *temp = *root;
+            *root = (*root)->right;
+            free(temp);
+        } else if ((*root)->right == NULL) {
+            struct BSTNodeBorrower *temp = *root;
+            *root = (*root)->left;
+            free(temp);
+        } else {
+            struct BSTNodeBorrower *temp = FindMinBorrower((*root)->right);
+            (*root)->data = temp->data;
+            deleteBorrower(socket, &((*root)->right), temp->data.username);
+        }
+        send(socket, "\tBorrower deleted successfully\n", strlen("\tBorrower deleted successfully\n"), 0);
+        usleep(10000);
+        send(socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
+    }
+}
+
 
 // Packet Handler
 void borrowerPacketHandler(int new_socket, MsgPacket *packet)

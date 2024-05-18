@@ -51,5 +51,8 @@ int isEligibleToBorrow(struct BSTNodeBorrower *root, char *username) ;
 int isEligibleTOReturn(struct BSTNodeBorrower *root, char *username, char *bookName) ;
 void showAllBorrowers(int socket, struct BSTNodeBorrower *root);
 void borrowerPacketHandler(int new_socket, MsgPacket *packet);
+void showAllBorrowersLoggedIn(int socket, struct BSTNodeBorrower *root);
+void deleteBorrower(int socket ,struct BSTNodeBorrower **root, const char *username) ;
+
 
 #endif /* BORROWER_H */

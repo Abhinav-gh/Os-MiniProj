@@ -266,10 +266,11 @@ void librarianMenu(int sock, char *username) {
         printf("4.) Show all books\n");
         printf("5.) Show all genres\n");
         printf("6.) Show all borrowers\n");
-        printf("7.) Show all borrowed books\n");
-        printf("8.) Show all late books\n");
-        printf("9.) Show all fines\n");
-        printf("10.) Logout\n");
+        printf("7.) Add a borrower:\n");
+        printf("8.) Remove a borrower:\n");
+        printf("9.) Show all loggedIn Borrower\n");
+        printf("10.) Show all loggedIn Librarian\n");
+        printf("11.) Logout\n");
 
         printf("\nEnter your choice (IN NUMBERS): ");
         if (scanf("%d", &choice) != 1) {
@@ -319,6 +320,68 @@ void librarianMenu(int sock, char *username) {
             payload[0] = strdup(isbn);
         }
 
+        else if(choice == 7)
+        {
+            char name[MAX_NAME_LENGTH];
+            char password[MAX_NAME_LENGTH];
+            char username[MAX_NAME_LENGTH];
+            char contact[MAX_NAME_LENGTH];
+
+            printf("\nEnter the name of the borrower: ");
+            scanf("%99s", name);
+            printf("\nEnter the password of the borrower: ");
+            scanf("%99s", password);
+            printf("\nEnter the username of the borrower: ");
+            scanf("%99s", username);
+            printf("\nEnter the contact of the borrower: ");
+            scanf("%99s", contact);
+
+            payload[0] = strdup(name);
+            payload[1] = strdup(username);
+            payload[2] = strdup(password);
+            payload[3] = strdup(contact);
+        }
+
+        else if(choice == 8)
+        {
+            char username[MAX_NAME_LENGTH];
+            printf("\nEnter the username of the borrower: ");
+            scanf("%99s", username);
+            payload[0] = strdup(username);
+        }
+
+        else if(choice == 3)
+        {
+            char title[MAX_NAME_LENGTH];
+            char isbn[MAX_NAME_LENGTH];
+            char author[MAX_NAME_LENGTH];
+            char genre[MAX_NAME_LENGTH];
+            char yearPublished[MAX_NAME_LENGTH];
+            char numCopies[MAX_NAME_LENGTH];
+
+            printf("\nEnter the title of the book: ");
+            scanf("%99s", title);
+            printf("\nEnter the ISBN of the book: ");
+            scanf("%99s", isbn);
+            printf("\nEnter the author of the book: ");
+            scanf("%99s", author);
+            printf("\nEnter the genre of the book: ");
+            scanf("%99s", genre);
+            printf("\nEnter the year published: ");
+            scanf("%99s", yearPublished);
+            clearInputBuffer();
+            printf("\nEnter the number of copies: ");
+            scanf("%99s", numCopies);
+            clearInputBuffer();
+
+            payload[0] = strdup(title);
+            payload[1] = strdup(isbn);
+            payload[2] = strdup(author);
+            payload[3] = strdup(genre);
+            payload[4] = strdup(yearPublished);
+            payload[5] = strdup(numCopies);
+        }
+
         MsgPacket packet = {
             .username = username,
             .role = "librarian",
@@ -356,8 +419,17 @@ void librarianMenu(int sock, char *username) {
                 printf("\n\t\tRemove a borrower:\n\n");
                 break;
             case 9:
+                printf("\n\t\tLogged In Users\n\n");
+                break;
+            case 10:
+                printf("\n\t\tLogged In Librarians\n\n");
+                break;
+
+            case 11:
                 printf("\n\t\tLogging out...\n\n");
                 break;
+
+
             default:
                 printf("\n\t\tInvalid choice\n\n");
                 break;
@@ -387,15 +459,15 @@ void librarianMenu(int sock, char *username) {
             }
         }
 
-        if (choice == 10) {
+        if (choice == 11) {
             break;
         }
+
 
         printf("\n\n");
         usleep(500000);
     }
 }
-
 
 
 
