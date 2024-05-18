@@ -9,9 +9,8 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
     while (strcmp(requestedFunc, "logout") != 0)
     {
         char buffer[BUFFER_SIZE] = {0};
-        int valread = read(new_socket, buffer, BUFFER_SIZE);
-        buffer[valread] = '\0';
-        strncpy(requestedFunc, buffer, BUFFER_SIZE - 1);
+        int valread = read(new_socket, requestedFunc, BUFFER_SIZE);
+        requestedFunc[valread] = '\0';
 
         printf("Requested Functionality: %s\n", requestedFunc);
         if (strcmp(requestedFunc, "add") == 0)

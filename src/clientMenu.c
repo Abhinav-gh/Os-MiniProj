@@ -95,7 +95,7 @@ void LibraryMenuPrinter()
     printf("3.) View all books\n");
     printf("4.) View all borrowers\n");
     printf("5.) Add new borrowers\n");
-    printf("7.) Remove a borrowers\n");
+    printf("6.) Remove a borrower\n");
     printf("99.) Logout\n");
     printf("100.) Show menu again\n\n");
     printf("Enter your choice: (99:Logout ; 100: Menu)");
@@ -392,14 +392,17 @@ void LibrarianMenu(int sock)
             send(sock, &borrowerpacket, sizeof(borrowerpacket), 0);
 
             break;
-        case 7:
+        case 6:
             send(sock, "removeBorrower", strlen("removeBorrower"), 0);
             // take the username of the borrower to remove
             printf("Enter the username of the borrower you want to remove: ");
-            char usernameToRemove[100];
-            scanf("%s", usernameToRemove);
+            // char usernameToRemove[100];
+            // scanf("%s", usernameToRemove);
+            // directly read into buffr
+            scanf("%s", message);
             // send the username to server
-            send(sock, usernameToRemove, strlen(usernameToRemove), 0);
+            send(sock, message, strlen(message), 0);
+            memset(message, 0, sizeof(message));
             break;
         case 99:
             send(sock, "logout", strlen("logout"), 0);

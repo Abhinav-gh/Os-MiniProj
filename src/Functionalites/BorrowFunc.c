@@ -9,17 +9,14 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
     while (strcmp(requestedFunc, "logout") != 0)
     {
         char buffer[BUFFER_SIZE] = {0};
-        int valread = read(new_socket, buffer, BUFFER_SIZE);
-        buffer[valread] = '\0';
-        strncpy(requestedFunc, buffer, BUFFER_SIZE - 1);
+        int valread = read(new_socket, requestedFunc, BUFFER_SIZE);
+        requestedFunc[valread] = '\0';
 
         printf("Requested Functionality: %s\n", requestedFunc);
         if (strcmp(requestedFunc, "borrow") == 0)
         {
             // get the isbn and genere of the book from client. Also get the username from the client
-            char isbn[BUFFER_SIZE] = {0};
-            char genre[BUFFER_SIZE] = {0};
-            char username[BUFFER_SIZE] = {0};
+            char isbn[BUFFER_SIZE] = {0},genre[BUFFER_SIZE] = {0},username[BUFFER_SIZE] = {0};
             int valread = read(new_socket, buffer, BUFFER_SIZE);
             buffer[valread] = '\0';
             strncpy(isbn, buffer, BUFFER_SIZE - 1);
