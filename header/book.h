@@ -43,17 +43,24 @@ struct BSTNodeBook {
 };
 
 
-void insertBook(struct BSTNodeBook** root, const char* genreName, struct LibraryBook* book);
+// Function Prototypes
+void ReadAllGenres(int socket, struct BSTNodeBook *root, MsgPacket *packet);
+void ReadAllBooks(int socket,struct BSTNodeBook *root, MsgPacket *packet);
+struct LibraryBook* createBook(int socket ,const char* title, const char* author, const char* ISBN, int numCopies, int isAvailable, int yearPublished, time_t issueDate, time_t returnDate,char *username);
 struct BSTNodeBook* createBSTNodeBook(struct LibraryBook* book);
-struct LibraryBook* createBook(const char* title, const char* author, const char* ISBN, int numCopies, int isAvailable, int yearPublished, time_t issueDate, time_t returnDate, char *username);
-void ReadDatabaseBook(struct BSTNodeBook **root, const char *filename);
-void ReadAllGenres(int socket , struct BSTNodeBook *root , MsgPacket* packet);
-void ReadAllBooks(int socket, struct BSTNodeBook *root, MsgPacket *packet);
+void insertBook(struct BSTNodeBook** root, const char* genreName, struct LibraryBook* book);
+void displayAllBooks(struct BSTNodeBook* root) ;
+void ReadDatabaseBook(struct BSTNodeBook **root, const char *filename) ;
+void writeBSTToFileHelperBook(struct BSTNodeBook *root, int fd) ;
+void writeBSTToFileBook(struct BSTNodeBook *root, const char *filename);
 int borrowBook(int socket, struct BSTNodeBook *root, const char *ISBN, char *username);
 void FetchBookNameFromISBN(struct BSTNodeBook *root, const char *ISBN, char *bookName);
-void writeBSTToFileBook(struct BSTNodeBook *root, const char *filename);
 int CheckRemainingTimeForBookReturn(struct BSTNodeBook *root, const char *bookName);
 int returnBook(int socket, struct BSTNodeBook *root, const char *ISBN, char *username);
 int validateISBN(const char *ISBN);
+int deleteBookFromGenre(int socket, struct Genre *genre, const char *ISBN);
+int deleteBook(int socket, struct BSTNodeBook **root, const char *ISBN);
+
+
 
 #endif /* BST_GENRE_H */

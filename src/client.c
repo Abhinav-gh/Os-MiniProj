@@ -18,9 +18,7 @@ char buffer[BUFFER_SIZE] = {0};
 int sock = 0;
 volatile sig_atomic_t timeout_flag = 0; // Timeout flag
 
-// Function prototypes
-void connectToServer(const char *server_ip);
-void loginMenuWrapper();
+
 
 
 // Function to execute loginMenu with mutex protection

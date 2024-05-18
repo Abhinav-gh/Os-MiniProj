@@ -15,10 +15,14 @@ typedef struct MsgPacket {
     int choice;
 } MsgPacket;
 
-
-
-
-
+// Function prototypes
 void loginMenu(int sock);
+void handleLogin(int sock, int choice);
+void handleAuthentication(int sock,  char *username);
+void borrowerMenu(int sock, char *username);
+void librarianMenu(int sock, char *username);
+void adminMenu(int sock, char *username);
+void send_packet(int sock, MsgPacket *packet);
+void clearInputBuffer();
 
 #endif

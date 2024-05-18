@@ -1,10 +1,18 @@
-#include "../header/Librarian.h"
+#include "../header/librarian.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <pthread.h>
+#include "../header/borrower.h"
+#include "../header/book.h"
 
-#define BUFFER_SIZE 1024
 
+int isAvailable = 0;
 
 
 //function to create a new librarian
@@ -122,15 +130,52 @@ void WriteLibrarian(struct BSTNodeLibrarian  **root, const char *filename) {
 
 
 
+void librarianPacketHandler(int new_socket, MsgPacket *packet) {
 
-// main function for testing
-int main() {
-    struct BSTNodeLibrarian* root = NULL;
+    struct BSTNodeBorrower *rootborrower = NULL;
+    ReadDatabaseBorrower(&rootborrower, "../database/users/borrower.txt");
 
-    ReadDatabaseLibrarian(&root, "../database/users/librarian.txt");
-    displayLibrarians(root);
-    WriteLibrarian(&root, "../database/users/librarian.txt");
+    struct BSTNodeBook *rootbook = NULL;
+    ReadDatabaseBook(&rootbook, "../database/Books/books.txt");
+
+    switch(packet->choice)
+    {
+        case 1:
+            isAvailable = atoi(packet->payload[5]) > 0 ? 1 : 0;
+            insertBook(&rootbook,packet->payload[3] ,createBook(new_socket,packet->payload[0], packet->payload[2], packet->payload[1],atoi(packet->payload[5]) , isAvailable , atoi(packet->payload[4]) ,0 , 0 , "NULL")); 
+            writeBSTToFileBook(rootbook, "../database/Books/books.txt");
+            break;
+
+        case 2:
+            //Delete book
+            deleteBook(new_socket, &rootbook, packet->payload[0]);
+            writeBSTToFileBook(rootbook, "../database/Books/books.txt");
+            break;
+
+        case 3:
+            break;
+            
+        case 4:
+            ReadAllBooks(new_socket, rootbook, packet);
+            break;
+
+        case 5:
+            ReadAllGenres(new_socket, rootbook, packet);
+            break;
+
+        case 6:
+            showAllBorrowers(new_socket, rootborrower);
+            break;
+
+        case 7:
+            //show fines of a borrower
+            break;
 
 
-    return 0;
+
+
+    }
 }
+
+
+    

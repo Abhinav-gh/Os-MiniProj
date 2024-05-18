@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include "../header/auth.h"
-#include "../header/Librarian.h"
+#include "../header/librarian.h"
 #include "../header/Admin.h"
 #include "../header/borrower.h"
 #include <time.h>
@@ -15,10 +15,7 @@
 
 #define BUFFER_SIZE 4096
 
-// Function prototypes
-int authHandler(int new_socket);
-User *read_user_data(const char *filename, const char *role);
-int authenticate_user(const char *username, const char *password, const char *role);
+
 
 
 
@@ -91,6 +88,8 @@ User *read_user_data(const char *filename, const char *role)
     return userArr; 
 }
 
+
+
 // Function to authenticate user
 int authenticate_user(const char *username, const char *password, const char *role)
 {
@@ -135,6 +134,8 @@ int authenticate_user(const char *username, const char *password, const char *ro
 
     return 0;
 }
+
+
 
 // Function to handle authentication for incoming connections
 int authHandler(int new_socket)

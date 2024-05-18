@@ -164,21 +164,18 @@ void setLoginStatus(struct BSTNodeBorrower *root, char *username, int status) {
 }
 
 
-
-
-
 void showBorrowedBooks(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
     if (root == NULL) {
         return;
     }
 
-    if (strcmp(root->data.username, packet->username) == 0) 
-    {
+    // Check if the current node's username matches the packet's username
+    if (strcmp(root->data.username, packet->username) == 0) {
         char buffer[BUFFER_SIZE];
         for (int i = 0; i < 3; i++) {
             if (strcmp(root->data.borrowedBooks[i], "NULL") != 0) {
-                sprintf(buffer, "\t%s\n", root->data.borrowedBooks[i]);
-                send(socket, buffer, strlen(buffer), 0);
+                snprintf(buffer, BUFFER_SIZE, "\t%s\n", root->data.borrowedBooks[i]);
+                send(socket, buffer, strlen(buffer) + 1, 0); 
                 usleep(10000);
             }
         }
@@ -191,10 +188,14 @@ void showBorrowedBooks(int socket, struct BSTNodeBorrower *root, MsgPacket *pack
     } else {
         showBorrowedBooks(socket, root->right, packet);
     }
-
-    const char *endOfTransmission = "END_OF_TRANSMISSION";
-    send(socket, endOfTransmission, strlen(endOfTransmission) + 1, 0);
 }
+
+// Wrapper function to call showBorrowedBooks and ensure "END_OF_TRANSMISSION" is sent once
+void sendBorrowedBooks(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
+    showBorrowedBooks(socket, root, packet);
+    send(socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
+}
+
 
 
 void showMyInfo(int socket, struct BSTNodeBorrower *root, MsgPacket *packet) {
@@ -368,12 +369,20 @@ void sendDueDates(int socket, struct BSTNodeBorrower *root, MsgPacket *packet, s
         for (int i = 0; i < 3; i++) {
             if (strcmp(root->data.borrowedBooks[i], "NULL") != 0) {
                 int remainingTime = CheckRemainingTimeForBookReturn(rootbook, root->data.borrowedBooks[i]);
-                sprintf(buffer, "\t%s: %d days remaining\n", root->data.borrowedBooks[i], remainingTime);
-                send(socket, buffer, strlen(buffer), 0);
-                usleep(10000);
+                snprintf(buffer, sizeof(buffer), "\t%s: %d days remaining\n", root->data.borrowedBooks[i], remainingTime);
+                if (send(socket, buffer, strlen(buffer), 0) == -1) {
+                    perror("send");
+                    return;
+                }
+                usleep(10000); // Small delay, if necessary for timing issues
             }
         }
-        send(socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
+        // Clear the buffer before sending the end-of-transmission message
+        memset(buffer, 0, sizeof(buffer));
+        snprintf(buffer, sizeof(buffer), "END_OF_TRANSMISSION");
+        if (send(socket, buffer, strlen(buffer) + 1, 0) == -1) {
+            perror("send");
+        }
         return;
     }
 
@@ -382,8 +391,6 @@ void sendDueDates(int socket, struct BSTNodeBorrower *root, MsgPacket *packet, s
     } else {
         sendDueDates(socket, root->right, packet, rootbook);
     }
-
-    
 }
 
 
@@ -438,6 +445,28 @@ void returnBookUserUpdate(struct BSTNodeBorrower *root, char *username, const ch
     }
 }
 
+// Function to Show all the borrower and their details and send eot
+void showAllBorrowers(int socket, struct BSTNodeBorrower *root) {
+    if (root == NULL) {
+        return;
+    }
+
+    showAllBorrowers(socket, root->left);
+
+    char buffer[BUFFER_SIZE];
+    sprintf(buffer, "Username: %s\nName: %s\nContact: %lld\nFine: %d\nLate: %d\nNumber of Books borrowed: %d\n\n", 
+            root->data.username, root->data.name, root->data.contact, root->data.fine, root->data.isLate, root->data.numBorrowedBooks);
+    send(socket, buffer, strlen(buffer), 0);
+    usleep(10000);
+
+    showAllBorrowers(socket, root->right);
+    
+    // Send the end of transmission message after the entire traversal
+    if (root->left == NULL && root->right == NULL) {
+        const char *eot = "END_OF_TRANSMISSION";
+        send(socket, eot, strlen(eot) + 1, 0);
+    }
+}
 
 // Packet Handler
 void borrowerPacketHandler(int new_socket, MsgPacket *packet)
@@ -557,6 +586,3 @@ void borrowerPacketHandler(int new_socket, MsgPacket *packet)
 
     }
 }
-
-
-

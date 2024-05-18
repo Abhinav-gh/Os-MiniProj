@@ -24,11 +24,11 @@ void ReadAllGenres(int socket, struct BSTNodeBook *root, MsgPacket *packet) {
 
     ReadAllGenres(socket, root->left, packet);
 
-    if (send(socket, root->genre.name, strlen(root->genre.name) + 1, 0) == -1) { // +1 to include the null terminator
+    if (send(socket, root->genre.name, strlen(root->genre.name) + 1, 0) == -1) { 
         perror("send");
         return;
     }
-    usleep(10000); // Optional, consider removing or reducing the sleep duration
+    usleep(10000);
 
     ReadAllGenres(socket, root->right, packet);
 
@@ -48,7 +48,7 @@ void ReadAllBooks(int socket,struct BSTNodeBook *root, MsgPacket *packet) {
 
     ReadAllBooks(socket, root->left, packet);
 
-    char buffer[400]; // Increased buffer size to accommodate the longest possible string
+    char buffer[4096] = {0}; 
     for (int i = 0; i < root->genre.numBooks; i++) {
         struct LibraryBook *book = &(root->genre.books[i]);
         snprintf(buffer, sizeof(buffer), "BOOK: %s\nAUTHOR: %s\nISBN: %s\nCOPIES AVAILABLE: %d\nYEAR-PUBLISHED: %d\n\n", 
@@ -73,7 +73,7 @@ void ReadAllBooks(int socket,struct BSTNodeBook *root, MsgPacket *packet) {
 
 
 // Function to create a new book
-struct LibraryBook* createBook(const char* title, const char* author, const char* ISBN, int numCopies, int isAvailable, int yearPublished, time_t issueDate, time_t returnDate,char *username) {
+struct LibraryBook* createBook(int socket ,const char* title, const char* author, const char* ISBN, int numCopies, int isAvailable, int yearPublished, time_t issueDate, time_t returnDate,char *username) {
     struct LibraryBook* book = (struct LibraryBook*)malloc(sizeof(struct LibraryBook));
     if (book == NULL) {
         perror("Memory allocation failed");
@@ -89,6 +89,12 @@ struct LibraryBook* createBook(const char* title, const char* author, const char
     book->issueDate = issueDate;
     book->returnDate = returnDate;
     book->borrowerUsername = username;
+
+    send(socket, "\t    Book added successfully !", strlen("\t .   Book added successfully !") + 1, 0);
+    usleep(10000);
+    const char *eot = "END_OF_TRANSMISSION";
+    send(socket, eot, strlen(eot) + 1, 0);
+
 
     return book;
 }
@@ -406,4 +412,50 @@ int validateISBN(const char *ISBN) {
     }
 
     return checksum == (ISBN[12] - '0');
+}
+
+// Delete a book from the BST given the ISBN , send a message to the client 
+int deleteBookFromGenre(int socket, struct Genre *genre, const char *ISBN) {
+    for (int i = 0; i < genre->numBooks; i++) {
+        struct LibraryBook *book = &(genre->books[i]);
+        if (strcmp(book->ISBN, ISBN) == 0) {
+            send(socket, "\t    Book deleted successfully !", strlen("\t    Book deleted successfully !") + 1, 0);
+            usleep(10000);
+            const char *eot = "END_OF_TRANSMISSION";
+            send(socket, eot, strlen(eot) + 1, 0);
+            for (int j = i; j < genre->numBooks - 1; j++) {
+                genre->books[j] = genre->books[j + 1];
+            }
+            genre->numBooks--;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int deleteBook(int socket, struct BSTNodeBook **root, const char *ISBN) {
+    if (*root == NULL) {
+        return 0;
+    }
+
+    if (deleteBook(socket, &((*root)->left), ISBN)) {
+        return 1;
+    }
+
+    if (deleteBookFromGenre(socket, &((*root)->genre), ISBN)) {
+        return 1;
+    }
+
+    if (deleteBook(socket, &((*root)->right), ISBN)) {
+        return 1;
+    }
+
+    if ((*root)->left == NULL && (*root)->right == NULL) {
+        send(socket, "\t\tBook not found !", strlen("\t\tBook not found !") + 1, 0);
+        usleep(10000);
+        const char *eot = "END_OF_TRANSMISSION";
+        send(socket, eot, strlen(eot) + 1, 0);
+    }
+
+    return 0;
 }

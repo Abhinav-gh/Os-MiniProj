@@ -33,12 +33,23 @@ struct BSTNodeBorrower {
 };
 
 // Function prototypes
-struct Borrower* createBorrower( char* username, const char* name, const char* password, long long int contact, int ID);
+struct Borrower* createBorrower(char* username, const char* name, const char* password, long long int contact, int ID);
 struct BSTNodeBorrower* createBSTNodeBorrower(struct Borrower* borrower);
 void insertBorrower(struct BSTNodeBorrower** root, struct Borrower borrower);
-void borrowerPacketHandler(int new_socket, MsgPacket *packet);
 void ReadDatabaseBorrower(struct BSTNodeBorrower  **root, const char *filename);
-
-
+void writeBSTToFileHelperBorrower(struct BSTNodeBorrower *root, int fd) ;
+void WriteDatabaseBorrower(struct BSTNodeBorrower *root, const char *filename);
+void setLoginStatus(struct BSTNodeBorrower *root, char *username, int status);
+void showBorrowedBooks(int socket, struct BSTNodeBorrower *root, MsgPacket *packet);
+void sendBorrowedBooks(int socket, struct BSTNodeBorrower *root, MsgPacket *packet);
+void showMyInfo(int socket, struct BSTNodeBorrower *root, MsgPacket *packet);
+void changePassword(int socket, struct BSTNodeBorrower *root, MsgPacket *packet);
+void updateContact(int socket, struct BSTNodeBorrower *root, MsgPacket *packet);
+void checkDueDate(int socket, struct BSTNodeBorrower *root, MsgPacket *packet);
+void logout(int socket);
+int isEligibleToBorrow(struct BSTNodeBorrower *root, char *username) ;
+int isEligibleTOReturn(struct BSTNodeBorrower *root, char *username, char *bookName) ;
+void showAllBorrowers(int socket, struct BSTNodeBorrower *root);
+void borrowerPacketHandler(int new_socket, MsgPacket *packet);
 
 #endif /* BORROWER_H */

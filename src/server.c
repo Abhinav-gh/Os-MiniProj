@@ -9,6 +9,7 @@
 #include "../header/server.h"
 #include "../header/auth.h"
 #include "../header/borrower.h"
+#include "../header/librarian.h"
 
 int IsAuthenticated = 0;
 
@@ -117,12 +118,12 @@ void startServer(int port) {
                 receive_packet(new_socket, &packet);
                 if(strcmp(packet.role, "borrower") == 0) {
                     borrowerPacketHandler(new_socket, &packet);
-                }
-                // } else if(strcmp(packet.role, "librarian") == 0) {
-                //     librarianPacketHandler(new_socket, packet);
-                // } else if(strcmp(packet.role, "admin") == 0) {
-                //     adminPacketHandler(new_socket, packet);
-                // }
+                } else if(strcmp(packet.role, "librarian") == 0) {
+                    librarianPacketHandler(new_socket, &packet);
+                } 
+                // else if(strcmp(packet.role, "admin") == 0) {
+                // //     adminPacketHandler(new_socket, packet);
+                // // }
 
 
 

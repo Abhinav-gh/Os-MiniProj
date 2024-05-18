@@ -11,14 +11,7 @@
 char bufferMsg[bufferMsg_SIZE] = {0};
 
 
-// Function prototypes
-void loginMenu(int sock);
-void handleLogin(int sock, int choice);
-void handleAuthentication(int sock,  char *username);
-void borrowerMenu(int sock, char *username);
-void librarianMenu(int sock, char *username);
-void adminMenu(int sock, char *username);
-void send_packet(int sock, MsgPacket *packet);
+
 
 
 void send_packet(int sock, MsgPacket *packet) {
@@ -260,17 +253,13 @@ void borrowerMenu(int sock, char *username) {
 }
 
 
-
-
-
 void librarianMenu(int sock, char *username) {
     char bufferMsg[BUFFER_SIZE];
 
     while (1) {
-
         int choice;
 
-        printf("----------------Librarian Menu----------------\n");
+        printf("\n----------------Librarian Menu----------------\n");
         printf("1.) Add a book\n");
         printf("2.) Remove a book\n");
         printf("3.) Update a book\n");
@@ -282,56 +271,128 @@ void librarianMenu(int sock, char *username) {
         printf("9.) Show all fines\n");
         printf("10.) Logout\n");
 
-        printf("Enter your choice: ");
-        scanf("%d", &choice);
+        printf("\nEnter your choice (IN NUMBERS): ");
+        if (scanf("%d", &choice) != 1) {
+            printf("\nInvalid input! PLEASE ENTER A NUMBER ONLY!\n\n\n");
+            sleep(1);
+            clearInputBuffer();
+            continue;
+        }
+        clearInputBuffer();
 
-        const char *payload[1] = {NULL};
+        char *payload[6] = {NULL}; // Array to hold payload elements, max 6 elements for Add a book
 
         if (choice == 1) {
             char title[MAX_NAME_LENGTH];
-            printf("Enter the title of the book: ");
-            scanf("%s", title);
+            char isbn[MAX_NAME_LENGTH];
+            char author[MAX_NAME_LENGTH];
+            char genre[MAX_NAME_LENGTH];
+            char yearPublished[MAX_NAME_LENGTH];
+            char numCopies[MAX_NAME_LENGTH];
+
+            printf("\nEnter the title of the book: ");
+            scanf("%99s", title);
+            printf("\nEnter the ISBN of the book: ");
+            scanf("%99s", isbn);
+            printf("\nEnter the author of the book: ");
+            scanf("%99s", author);
+            printf("\nEnter the genre of the book: ");
+            scanf("%99s", genre);
+            printf("\nEnter the year published: ");
+            scanf("%99s", yearPublished);
+            clearInputBuffer();
+            printf("\nEnter the number of copies: ");
+            scanf("%99s", numCopies);
+            clearInputBuffer();
+
             payload[0] = strdup(title);
+            payload[1] = strdup(isbn);
+            payload[2] = strdup(author);
+            payload[3] = strdup(genre);
+            payload[4] = strdup(yearPublished);
+            payload[5] = strdup(numCopies);
         } else if (choice == 2 || choice == 3) {
             char isbn[MAX_NAME_LENGTH];
-            printf("Enter the ISBN of the book: ");
-            scanf("%s", isbn);
+            printf("\nEnter the ISBN of the book: ");
+            scanf("%99s", isbn);
+            clearInputBuffer();
             payload[0] = strdup(isbn);
         }
 
         MsgPacket packet = {
             .username = username,
             .role = "librarian",
-            .payload = payload[0] ? payload : NULL,
-            .payload_count = payload[0] ? 1 : 0,
+            .payload = payload[0] ? (const char **)payload : NULL,
+            .payload_count = payload[0] ? (choice == 1 ? 6 : 1) : 0,
             .choice = choice
         };
 
         send_packet(sock, &packet);
+        printf("\n\n-----------RECEIVED MESSAGE FROM THE SERVER-----------\n\n");
 
-        while(1)
-        {
-            ssize_t bytesRead = read(sock, bufferMsg, bufferMsg_SIZE);
+        switch (choice) {
+            case 1:
+                printf("\n\t\tAdd a book:\n\n");
+                break;
+            case 2:
+                printf("\n\t\tRemove a book:\n\n");
+                break;
+            case 3:
+                printf("\n\t\tUpdate a book:\n\n");
+                break;
+            case 4:
+                printf("\n\t\tShow all books:\n\n");
+                break;
+            case 5:
+                printf("\n\t\tShow all genres:\n\n");
+                break;
+            case 6:
+                printf("\n\t\tShow all borrowers:\n\n");
+                break;
+            case 7:
+                printf("\n\t\tAdd a borrower:\n\n");    
+                break;
+            case 8:
+                printf("\n\t\tRemove a borrower:\n\n");
+                break;
+            case 9:
+                printf("\n\t\tLogging out...\n\n");
+                break;
+            default:
+                printf("\n\t\tInvalid choice\n\n");
+                break;
+        }
+
+        while (1) {
+            ssize_t bytesRead = read(sock, bufferMsg, BUFFER_SIZE);
             if (bytesRead < 0) {
                 perror("recv");
                 break;
-            } else if (bytesRead == 0) {
-                // Connection closed by server
-                break;
-            } else if (bufferMsg[0] == '\0') {
-                // End of transmission indicator
+            }
+
+            if (strcmp(bufferMsg, "END_OF_TRANSMISSION") == 0) {
                 break;
             }
 
-            printf("Received genre: %s\n", bufferMsg);
-            memset(bufferMsg, 0, bufferMsg_SIZE);
+            if (strlen(bufferMsg) > 0) {
+                printf("%s\n", bufferMsg);
+            }
+
+            memset(bufferMsg, 0, BUFFER_SIZE);
         }
 
-        // Free dynamically allocated payload strings
-        if (payload[0]) {
-            free((void*)payload[0]);
+        for (int i = 0; i < 6; ++i) {
+            if (payload[i]) {
+                free(payload[i]);
+            }
         }
 
+        if (choice == 10) {
+            break;
+        }
+
+        printf("\n\n");
+        usleep(500000);
     }
 }
 
@@ -394,10 +455,8 @@ void adminMenu(int sock, char *username) {
                 perror("recv");
                 break;
             } else if (bytesRead == 0) {
-                // Connection closed by server
                 break;
             } else if (bufferMsg[0] == '\0') {
-                // End of transmission indicator
                 break;
             }
 
