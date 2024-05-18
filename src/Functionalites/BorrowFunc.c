@@ -2,7 +2,7 @@
 
 void borrowerFunc(int new_socket, struct BSTNodeBook *root)
 {
-    printf("here in src/Functionalities/BorrowFunc.c \n");
+    printf("Control passed to src/Functionalities/BorrowFunc.c \n");
 
     // Get the functionality requested by the borrower
     char requestedFunc[BUFFER_SIZE] = {0};
@@ -154,11 +154,17 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
         {
             int isfineCalculated = 0;
             read(new_socket, &isfineCalculated, sizeof(int));
+            printf("Is fine calculated: %d\n", isfineCalculated);
             if (isfineCalculated == 0)
             {
-                send(new_socket, "Fine not calculated. First go to return", strlen("Fine not calculated. First go to return"), 0);
+                // printf("ere\n");
+                send(new_socket, "Fine not calculated. ", strlen("Fine not calculated. "), 0);
+                usleep(100000);
+                //send something empty
+                send(new_socket, "First go to return", strlen("First go to return"), 0);
+                // send(new_socket, "Fine not calculated. First go to return", strlen("Fine not calculated. First go to return"), 0);
             }
-            else
+            else if(isfineCalculated == 1)
             {
                 // printf("Fine calculated\n");
                 send(new_socket, "Fine calculated", strlen("Fine calculated"), 0);
@@ -209,8 +215,8 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
             username[valread] = '\0';
             // printf("Username: %s\n", username);
             char * borrowedBooksInfo = getAllBorrowedBooks(borrowerRoot,username);
-            // printf("Borrowed Books Info: %s\n", borrowedBooksInfo);
-            if(borrowedBooksInfo==NULL){
+            // printf("Borrowed Books Info: %s", borrowedBooksInfo);
+            if(strcmp(borrowedBooksInfo,"")==0){
                 send(new_socket, "No borrowed books", strlen("No borrowed books"), 0);
                 continue;
             }

@@ -6,10 +6,10 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
-#include "../header/auth.h"
-#include "../header/Librarian.h"
-#include "../header/Admin.h"
-#include "../header/borrower.h"
+#include "../../header/auth.h"
+#include "../../header/Librarian.h"
+#include "../../header/Admin.h"
+#include "../../header/borrower.h"
 
 #define BUFFER_SIZE 1024
 

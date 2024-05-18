@@ -3,7 +3,7 @@ CC = cc
 SERVER_EXEC = server_exec
 CLIENT_EXEC = client_exec
 
-SERVER_SRC = server.c auth.c Functionalites/funcHandlerMain.c 
+SERVER_SRC = Server/server.c Server/auth.c Functionalites/funcHandlerMain.c 
 CLIENT_SRC = Client/client.c Client/clientMenu.c
 
 all: server client

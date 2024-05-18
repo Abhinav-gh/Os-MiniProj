@@ -128,7 +128,7 @@ void ResponseHandler(int sock, int choice)
 void payFine(int sock, int fine)
 {
     // check if fine is to be paid
-    if (fine != 0)
+    if (fine != 0 && isfineCalculated == 1)
     {
         printf(" Fine to be paid: %d\n", fine);
         printf("Do you want to pay the fine? (y/n): ");
@@ -328,6 +328,9 @@ void BorrowerMenu(int sock)
             break;
         case 3:
             send(sock, "view", strlen("view"), 0);
+            recv(sock, message, BUFFER_SIZE, 0);
+            message[strlen(message)] = '\0';
+            printf("%s\n", message);
             break;
         case 4:
             send(sock, "search", strlen("search"), 0);
@@ -349,15 +352,15 @@ void BorrowerMenu(int sock)
             recv(sock, message, BUFFER_SIZE, 0);
             message[strlen(message)] = '\0';
             printf("%s.", message);
-            if (strcmp(message, "Fine not calculated. First go to return") == 0)
+            if (strcmp(message, "Fine not calculated. ") == 0 || message == NULL)
             {
-                printf("Fine not calculated. First go to return\n");
+                // printf("Fine not calculated. First go to return\n");
                 break;
             }
             memset(message, 0, sizeof(message));
             send(sock, clientUsername, strlen(clientUsername), 0);
 
-            int fine;
+            int fine=0;
             recv(sock, &fine, sizeof(int), 0);
             payFine(sock, fine); // Pay the fine
             break;

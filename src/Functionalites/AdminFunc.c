@@ -2,7 +2,7 @@
 
 void adminFunc(int new_socket)
 {
-    printf("here in src/Functionalities/AdminFunc.c \n");
+    printf("Control passed to src/Functionalities/AdminFunc.c \n");
 
     // Get the functionality requested by the borrower
     char requestedFunc[BUFFER_SIZE] = {0};

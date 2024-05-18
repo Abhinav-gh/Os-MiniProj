@@ -2,7 +2,7 @@
 
 void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorrower *borrowerRoot)
 {
-    printf("here in src/Functionalities/LibraryFunc.c \n");
+    printf("Control passed to src/Functionalities/LibraryFunc.c \n");
 
     // Get the functionality requested by the borrower
     char requestedFunc[BUFFER_SIZE] = {0};

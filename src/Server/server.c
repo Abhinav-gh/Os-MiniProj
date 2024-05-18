@@ -6,8 +6,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
-#include "../header/server.h"
-#include "../header/auth.h"
+#include "../../header/server.h"
+#include "../../header/auth.h"
 
 int IsAuthenticated = 0;
 
