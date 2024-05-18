@@ -13,6 +13,7 @@
 
 
 int isAvailable = 0;
+struct Borrower borrower;
 
 
 //function to create a new librarian
@@ -201,6 +202,9 @@ void showAllLibrariansLoggedIn(int socket, struct BSTNodeLibrarian* root) {
 }
 
 
+
+
+
 //TODO: Implement the librarianPacketHandler function
 void librarianPacketHandler(int new_socket, MsgPacket *packet) {
 
@@ -227,7 +231,7 @@ void librarianPacketHandler(int new_socket, MsgPacket *packet) {
             isAvailable = atoi(packet->payload[5]) > 0 ? 1 : 0;
             insertBook(&rootbook,packet->payload[3] ,createBook(new_socket,packet->payload[0], packet->payload[2], packet->payload[1],atoi(packet->payload[5]) , isAvailable , atoi(packet->payload[4]) ,0 , 0 , "NULL")); 
             writeBSTToFileBook(rootbook, "../database/Books/books.txt");
-            break;
+            break;  
 
         case 2:
             deleteBook(new_socket, &rootbook, packet->payload[0]);
@@ -235,6 +239,8 @@ void librarianPacketHandler(int new_socket, MsgPacket *packet) {
             break;
 
         case 3:
+            updateBook(new_socket, rootbook, packet->payload[1], packet->payload[0], packet->payload[2], packet->payload[3], packet->payload[4], packet->payload[5]);
+            writeBSTToFileBook(rootbook, "../database/Books/books.txt");
             break;
             
         case 4:
@@ -250,9 +256,10 @@ void librarianPacketHandler(int new_socket, MsgPacket *packet) {
             break;
 
         case 7:
-            // id = getMaxUserID(rootborrower) + 1;
-            // insertBorrower(&rootborrower, createBorrower(new_socket, packet->payload[1], packet->payload[0], packet->payload[2], atoll(packet->payload[3]), id));
-            // WriteDatabaseBorrower(rootborrower, "../database/users/borrower.txt");
+            id = getMaxUserID(rootborrower) + 1;
+            insertBorrower(&rootborrower, createBorrower(new_socket, id, packet->payload[0], packet->payload[1], packet->payload[2], atoll(packet->payload[3])));
+            WriteDatabaseBorrower(rootborrower, "../database/users/borrower.txt");
+            
             break;
 
         case 8:

@@ -459,3 +459,30 @@ int deleteBook(int socket, struct BSTNodeBook **root, const char *ISBN) {
 
     return 0;
 }
+
+void updateBook(int socket, struct BSTNodeBook *root, const char *ISBN, const char *title, const char *author, const char *genre, const char *year, const char *quantity) {
+    if (root == NULL) {
+        return;
+    }
+
+    updateBook(socket, root->left, ISBN, title, author, genre, year, quantity);
+
+    for (int i = 0; i < root->genre.numBooks; i++) {
+        struct LibraryBook *book = &(root->genre.books[i]);
+        if (strcmp(book->ISBN, ISBN) == 0) {
+            strcpy(book->title, title);
+            strcpy(book->author, author);
+            strcpy(root->genre.name, genre);
+            book->yearPublished = atoi(year);
+            book->numCopies = atoi(quantity);
+            book->isAvailable = book->numCopies > 0;
+            send(socket, "\t    Book updated successfully !", strlen("\t    Book updated successfully !") + 1, 0);
+            usleep(10000);
+            const char *eot = "END_OF_TRANSMISSION";
+            send(socket, eot, strlen(eot) + 1, 0);
+            return;
+        }
+    }
+
+    updateBook(socket, root->right, ISBN, title, author, genre, year, quantity);
+}

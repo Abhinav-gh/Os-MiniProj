@@ -33,7 +33,7 @@ struct BSTNodeBorrower {
 };
 
 // Function prototypes
-struct Borrower* createBorrower(char* username, const char* name, const char* password, long long int contact, int ID);
+struct Borrower createBorrower(int socket ,int ID, const char* username, const char* name, const char* password, long long int contact);
 struct BSTNodeBorrower* createBSTNodeBorrower(struct Borrower* borrower);
 void insertBorrower(struct BSTNodeBorrower** root, struct Borrower borrower);
 void ReadDatabaseBorrower(struct BSTNodeBorrower  **root, const char *filename);
@@ -52,7 +52,6 @@ int isEligibleTOReturn(struct BSTNodeBorrower *root, char *username, char *bookN
 void showAllBorrowers(int socket, struct BSTNodeBorrower *root);
 void borrowerPacketHandler(int new_socket, MsgPacket *packet);
 void showAllBorrowersLoggedIn(int socket, struct BSTNodeBorrower *root);
-void deleteBorrower(int socket ,struct BSTNodeBorrower **root, const char *username) ;
-
-
+void deleteBorrower(int socket ,struct BSTNodeBorrower **root, const char *username);
+int getMaxUserID(struct BSTNodeBorrower *root);
 #endif /* BORROWER_H */

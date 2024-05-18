@@ -60,6 +60,7 @@ int returnBook(int socket, struct BSTNodeBook *root, const char *ISBN, char *use
 int validateISBN(const char *ISBN);
 int deleteBookFromGenre(int socket, struct Genre *genre, const char *ISBN);
 int deleteBook(int socket, struct BSTNodeBook **root, const char *ISBN);
+void updateBook(int socket, struct BSTNodeBook *root, const char *ISBN, const char *title, const char *author, const char *genre, const char *year, const char *quantity);
 
 
 

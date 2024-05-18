@@ -25,25 +25,31 @@ int validISBN = 0;
 const char *eot;
 
 
-//funtion to create a new borrower
-struct Borrower* createBorrower(char* username, const char* name, const char* password, long long int contact, int ID) {
-    struct Borrower* borrower = (struct Borrower*)malloc(sizeof(struct Borrower));
-    if (borrower == NULL) {
-        perror("Memory allocation failed");
-        exit(EXIT_FAILURE);
-    }
+//function to create a new borrower
+struct Borrower createBorrower(int socket ,int ID, const char* username, const char* name, const char* password, long long int contact){
+    struct Borrower borrower;
+    borrower.ID = ID;
+    strcpy(borrower.username, username);
+    strcpy(borrower.name, name);
+    strcpy(borrower.password, password);
+    borrower.contact = contact;
+    strcpy(borrower.borrowedBooks[0], "NULL");
+    strcpy(borrower.borrowedBooks[1], "NULL");
+    strcpy(borrower.borrowedBooks[2], "NULL");
+    borrower.numBorrowedBooks = 0;
+    borrower.fine = 0;
+    borrower.isLate = 0;
+    borrower.LoginStatus = 0;
 
-    strcpy(borrower->username, username);
-    strcpy(borrower->name, name);
-    strcpy(borrower->password, password);
-    borrower->contact = contact;
-    borrower->ID = ID;
-    borrower->numBorrowedBooks = 0;
-    borrower->fine = 0;
-    borrower->isLate = 0;
-    borrower->LoginStatus = 0;
+    send(socket, "\t    Borrower created successfully !", strlen("\t    Borrower created successfully 1") + 1, 0);
+    usleep(10000);
+    send(socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
+
+
 
     return borrower;
+
+
 }
 
 
@@ -61,8 +67,6 @@ struct BSTNodeBorrower* createBSTNodeBorrower(struct Borrower* borrower) {
 
     return newNode;
 }
-
-
 
 
 //function to insert a borrower into the BST on the basis of username
@@ -541,6 +545,28 @@ void deleteBorrower(int socket, struct BSTNodeBorrower **root, const char *usern
         usleep(10000);
         send(socket, "END_OF_TRANSMISSION", strlen("END_OF_TRANSMISSION") + 1, 0);
     }
+}
+
+
+
+int getMaxUserID(struct BSTNodeBorrower *root) {
+    if (root == NULL) {
+        return 0;
+    }
+
+    int max = root->data.ID;
+    int leftMax = getMaxUserID(root->left);
+    int rightMax = getMaxUserID(root->right);
+
+    if (leftMax > max) {
+        max = leftMax;
+    }
+
+    if (rightMax > max) {
+        max = rightMax;
+    }
+
+    return max;
 }
 
 

@@ -266,8 +266,8 @@ void librarianMenu(int sock, char *username) {
         printf("4.) Show all books\n");
         printf("5.) Show all genres\n");
         printf("6.) Show all borrowers\n");
-        printf("7.) Add a borrower:\n");
-        printf("8.) Remove a borrower:\n");
+        printf("7.) Add a borrower\n");
+        printf("8.) Remove a borrower\n");
         printf("9.) Show all loggedIn Borrower\n");
         printf("10.) Show all loggedIn Librarian\n");
         printf("11.) Logout\n");
@@ -320,11 +320,10 @@ void librarianMenu(int sock, char *username) {
             payload[0] = strdup(isbn);
         }
 
-        else if(choice == 7)
-        {
+        else if (choice == 7) {
             char name[MAX_NAME_LENGTH];
             char password[MAX_NAME_LENGTH];
-            char username[MAX_NAME_LENGTH];
+            char borrowerUsername[MAX_NAME_LENGTH];
             char contact[MAX_NAME_LENGTH];
 
             printf("\nEnter the name of the borrower: ");
@@ -332,26 +331,26 @@ void librarianMenu(int sock, char *username) {
             printf("\nEnter the password of the borrower: ");
             scanf("%99s", password);
             printf("\nEnter the username of the borrower: ");
-            scanf("%99s", username);
+            scanf("%99s", borrowerUsername);
             printf("\nEnter the contact of the borrower: ");
             scanf("%99s", contact);
+            clearInputBuffer();
 
             payload[0] = strdup(name);
-            payload[1] = strdup(username);
-            payload[2] = strdup(password);
+            payload[1] = strdup(password);
+            payload[2] = strdup(borrowerUsername);
             payload[3] = strdup(contact);
         }
 
-        else if(choice == 8)
-        {
-            char username[MAX_NAME_LENGTH];
+        else if (choice == 8) {
+            char borrowerUsername[MAX_NAME_LENGTH];
             printf("\nEnter the username of the borrower: ");
-            scanf("%99s", username);
-            payload[0] = strdup(username);
+            scanf("%99s", borrowerUsername);
+            clearInputBuffer();
+            payload[0] = strdup(borrowerUsername);
         }
 
-        else if(choice == 3)
-        {
+        else if (choice == 3) {
             char title[MAX_NAME_LENGTH];
             char isbn[MAX_NAME_LENGTH];
             char author[MAX_NAME_LENGTH];
@@ -386,37 +385,39 @@ void librarianMenu(int sock, char *username) {
             .username = username,
             .role = "librarian",
             .payload = payload[0] ? (const char **)payload : NULL,
-            .payload_count = payload[0] ? (choice == 1 ? 6 : 1) : 0,
+            .payload_count = payload[0] ? (choice == 1 ? 6 : (choice == 7 ? 4 : 1)) : 0,
             .choice = choice
         };
+
+
 
         send_packet(sock, &packet);
         printf("\n\n-----------RECEIVED MESSAGE FROM THE SERVER-----------\n\n");
 
         switch (choice) {
             case 1:
-                printf("\n\t\tAdd a book:\n\n");
+                printf("\n\t\tAdding book:\n\n");
                 break;
             case 2:
-                printf("\n\t\tRemove a book:\n\n");
+                printf("\n\t\tRemoving book:\n\n");
                 break;
             case 3:
-                printf("\n\t\tUpdate a book:\n\n");
+                printf("\n\t\tUpdating book copies\n\n");
                 break;
             case 4:
-                printf("\n\t\tShow all books:\n\n");
+                printf("\n\t\tShowing all books:\n\n");
                 break;
             case 5:
-                printf("\n\t\tShow all genres:\n\n");
+                printf("\n\t\tShowing all genres\n\n");
                 break;
             case 6:
-                printf("\n\t\tShow all borrowers:\n\n");
+                printf("\n\t\tShowing all borrowers:\n\n");
                 break;
             case 7:
-                printf("\n\t\tAdd a borrower:\n\n");    
+                printf("\n\t\tAdding borrower:\n\n");
                 break;
             case 8:
-                printf("\n\t\tRemove a borrower:\n\n");
+                printf("\n\t\tRemoving borrower:\n\n");
                 break;
             case 9:
                 printf("\n\t\tLogged In Users\n\n");
@@ -424,12 +425,9 @@ void librarianMenu(int sock, char *username) {
             case 10:
                 printf("\n\t\tLogged In Librarians\n\n");
                 break;
-
             case 11:
                 printf("\n\t\tLogging out...\n\n");
                 break;
-
-
             default:
                 printf("\n\t\tInvalid choice\n\n");
                 break;
@@ -463,12 +461,10 @@ void librarianMenu(int sock, char *username) {
             break;
         }
 
-
         printf("\n\n");
         usleep(500000);
     }
 }
-
 
 
 
