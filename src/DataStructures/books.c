@@ -1,5 +1,5 @@
-#include "../header/book.h"
-#include "../header/borrower.h"
+#include "../../header/book.h"
+#include "../../header/borrower.h"
 #include <time.h>
 #include <string.h>
 #include <stdio.h>
@@ -400,6 +400,7 @@ int returnBook(struct BSTNodeBook *root, const char *genreName, const char *ISBN
                 // remove the book from borrower'sborrowedBooks
                 // the books are currently added to this array struct LibraryBook* borrowedBooks[3];. Remove the book from this array
                 borrower->borrowedBooks[i] = NULL;
+                borrower->numBorrowedBooks--;
                 printf("Book returned successfully\n");
                 return 0;
             }

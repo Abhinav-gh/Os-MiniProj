@@ -1,14 +1,11 @@
-#include "../header/borrower.h"
-#include "../header/book.h"
+#include "../../header/borrower.h"
+#include "../../header/book.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define BUFFER_SIZE 1024
 
-#include "../header/borrower.h"
-#include <stdlib.h>
-#include <string.h>
 
 // Function prototypes
 

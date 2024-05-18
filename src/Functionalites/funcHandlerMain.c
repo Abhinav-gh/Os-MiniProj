@@ -1,6 +1,6 @@
 #include "../../header/Functionalities/funcHandlerMain.h"
-#include "../books.c"
-#include "../borrower.c"
+#include "../DataStructures/books.c"
+#include "../DataStructures/borrower.c"
 #include "./BorrowFunc.c"
 #include "./AdminFunc.c"
 #include "./LibraryFunc.c"

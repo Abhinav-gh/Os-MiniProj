@@ -75,6 +75,7 @@ int loginMenu(int sock) // returns if authenticated or not
 }
 
 // ---------->>>>>>>>>>> Important Functionalities  <<<<<<<<<<<<----------
+// Main menu helper functions.(Menu Printer and Server Response Handler)
 void BorrowerMenuPrinter()
 {
     printf("----------------Borrower Menu----------------\n");
@@ -125,6 +126,7 @@ void ResponseHandler(int sock, int choice)
     printf("%s\n", message); // server tells if authenticated or not
     printf("Enter your choice: (99:Logout ; 100: Menu)");
 }
+// Library helper functions
 void payFine(int sock, int fine)
 {
     // check if fine is to be paid
@@ -153,10 +155,6 @@ void payFine(int sock, int fine)
             }
             send(sock, "Fine paid", strlen("Fine paid"), 0);
         }
-    }
-    else
-    {
-        printf(" No fine to pay\n");
     }
 }
 void addBookHelper(int sock)
@@ -244,7 +242,66 @@ void addBorrowerHelper(int sock)
     // send the bookpacket to server
     send(sock, &borrowerpacket, sizeof(borrowerpacket), 0);
 }
+// Borrower helper functions
+void BorrowBookHelper(int sock)
+{
+    // Take the isbn, genre and username of the borrower
+    printf("Enter the ISBN of the book you want to borrow: ");
+    char isbnToBorrow[100], genreToBorrow[100];
+    scanf("%s", isbnToBorrow);
+    printf("Enter the genre of the book you want to borrow: ");
+    scanf("%s", genreToBorrow);
+    send(sock, isbnToBorrow, strlen(isbnToBorrow), 0);
+    usleep(100000);
+    send(sock, genreToBorrow, strlen(genreToBorrow), 0);
+    usleep(100000);
+    send(sock, clientUsername, strlen(clientUsername), 0);
+}
+void ReturnBookHelper(int sock){
+    // take the isbn, genre and username of the borrower
+    printf("Enter the ISBN of the book you want to return: ");
+    char isbnToReturn[100], genreToReturn[100];
+    scanf("%s", isbnToReturn);
+    printf("Enter the genre of the book you want to return: ");
+    scanf("%s", genreToReturn);
+    // send the isbn, genre and username to server
+    send(sock, isbnToReturn, strlen(isbnToReturn), 0);
+    usleep(100000);
+    send(sock, genreToReturn, strlen(genreToReturn), 0);
+    usleep(100000);
+    send(sock, clientUsername, strlen(clientUsername), 0);
+    usleep(100000);
+    isfineCalculated = 1;
+}
+void SearchBookHelper(int sock)
+{
+    printf("Enter the book ISBN you want to search: ");
+    char isbn[100], genre[100];
+    scanf("%s", isbn);
+    send(sock, isbn, strlen(isbn), 0);
+    printf("Enter the genre of the book: ");
+    scanf("%s", genre);
+    send(sock, genre, strlen(genre), 0);
+}
+int payFineHelper(int sock)
+{
+    send(sock, &isfineCalculated, sizeof(int), 0);
+    // clear message
+    memset(message, 0, sizeof(message));
+    recv(sock, message, BUFFER_SIZE, 0);
+    message[strlen(message)] = '\0';
+    printf("%s\n", message);
+    if (strcmp(message, "Fine not calculated. ") == 0 || message == NULL)
+    {
+        // printf("Fine not calculated. First go to return\n");
+        return 1;
+    }
+    memset(message, 0, sizeof(message));
+    send(sock, clientUsername, strlen(clientUsername), 0);
+    return 0;
+}
 
+// Main menu functions
 void AdminMenu(int sock)
 {
     send(sock, "admin", strlen("admin"), 0); // send role to server
@@ -296,72 +353,37 @@ void BorrowerMenu(int sock)
         switch (choice)
         {
         case 1:
-            // take the isbn, genre and username of the borrower
+            // Borrow a book
             send(sock, "borrow", strlen("borrow"), 0);
-            printf("Enter the ISBN of the book you want to borrow: ");
-            char isbnToBorrow[100], genreToBorrow[100];
-            scanf("%s", isbnToBorrow);
-            printf("Enter the genre of the book you want to borrow: ");
-            scanf("%s", genreToBorrow);
-            send(sock, isbnToBorrow, strlen(isbnToBorrow), 0);
-            usleep(100000);
-            send(sock, genreToBorrow, strlen(genreToBorrow), 0);
-            usleep(100000);
-            send(sock, clientUsername, strlen(clientUsername), 0);
+            BorrowBookHelper(sock);
             break;
         case 2:
+            // Return a book
             send(sock, "return", strlen("return"), 0);
-            // take the isbn, genre and username of the borrower
-            printf("Enter the ISBN of the book you want to return: ");
-            char isbnToReturn[100], genreToReturn[100];
-            scanf("%s", isbnToReturn);
-            printf("Enter the genre of the book you want to return: ");
-            scanf("%s", genreToReturn);
-            // send the isbn, genre and username to server
-            send(sock, isbnToReturn, strlen(isbnToReturn), 0);
-            usleep(100000);
-            send(sock, genreToReturn, strlen(genreToReturn), 0);
-            usleep(100000);
-            send(sock, clientUsername, strlen(clientUsername), 0);
-            usleep(100000);
-            isfineCalculated = 1;
+            ReturnBookHelper(sock);
             break;
         case 3:
+            // View all books
             send(sock, "view", strlen("view"), 0);
             recv(sock, message, BUFFER_SIZE, 0);
             message[strlen(message)] = '\0';
             printf("%s\n", message);
             break;
         case 4:
+            // Search a book
             send(sock, "search", strlen("search"), 0);
-            printf("Enter the book ISBN you want to search: ");
-            char isbn[100], genre[100];
-            scanf("%s", isbn);
-            send(sock, isbn, strlen(isbn), 0);
-            printf("Enter the genre of the book: ");
-            scanf("%s", genre);
-            send(sock, genre, strlen(genre), 0);
+            SearchBookHelper(sock);
             break;
         case 5:
             // pay fine. send username and recieve fine from server
             send(sock, "payFine", strlen("payFine"), 0);
             usleep(100000);
-            send(sock, &isfineCalculated, sizeof(int), 0);
-            // clear message
-            memset(message, 0, sizeof(message));
-            recv(sock, message, BUFFER_SIZE, 0);
-            message[strlen(message)] = '\0';
-            printf("%s.", message);
-            if (strcmp(message, "Fine not calculated. ") == 0 || message == NULL)
-            {
-                // printf("Fine not calculated. First go to return\n");
+            if(payFineHelper(sock)==1){
                 break;
             }
-            memset(message, 0, sizeof(message));
-            send(sock, clientUsername, strlen(clientUsername), 0);
-
-            int fine=0;
+            int fine = 0;
             recv(sock, &fine, sizeof(int), 0);
+            // printf("the fine recieved is %d\n", fine);
             payFine(sock, fine); // Pay the fine
             break;
         case 6:
@@ -395,33 +417,33 @@ void LibrarianMenu(int sock)
         switch (choice)
         {
         case 1:
-        // add a book
+            // add a book
             send(sock, "add", strlen("add"), 0);
             memset(message, 0, sizeof(message));
             addBookHelper(sock);
             break;
         case 2:
-        // remove a book
+            // remove a book
             // prepare to send a 2d aray of 2 strings, isbn and genre
             send(sock, "remove", strlen("remove"), 0);
             removeBookHelper(sock);
             break;
         case 3:
-        // View all books
+            // View all books
             send(sock, "viewBooks", strlen("viewBooks"), 0);
             break;
         case 4:
-        // View all borrowers
+            // View all borrowers
             send(sock, "viewBorrowers", strlen("viewBorrowers"), 0);
             break;
         case 5:
-        // add borrower
+            // add borrower
             send(sock, "addBorrower", strlen("addBorrower"), 0);
             memset(message, 0, sizeof(message));
             addBorrowerHelper(sock);
             break;
         case 6:
-        // remove a borrower
+            // remove a borrower
             send(sock, "removeBorrower", strlen("removeBorrower"), 0);
             // take the username of the borrower to remove
             printf("Enter the username of the borrower you want to remove: ");
@@ -430,11 +452,11 @@ void LibrarianMenu(int sock)
             send(sock, message, strlen(message), 0);
             break;
         case 99:
-        // logout
+            // logout
             send(sock, "logout", strlen("logout"), 0);
             break;
         case 100:
-        // show menu again
+            // show menu again
             LibraryMenuPrinter();
             continue;
         default:

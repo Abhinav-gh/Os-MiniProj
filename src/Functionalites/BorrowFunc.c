@@ -97,12 +97,12 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
             if (isreturned == 1)
             {
                 send(new_socket, "Book not found", strlen("Book not found"), 0);
-                return;
+                continue;
             }
             else if (isreturned == 2)
             {
                 send(new_socket, "Book not borrowed by this user", strlen("Book not borrowed by this user"), 0);
-                return;
+                continue;
             }
             else
             {
@@ -154,7 +154,7 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
         {
             int isfineCalculated = 0;
             read(new_socket, &isfineCalculated, sizeof(int));
-            printf("Is fine calculated: %d\n", isfineCalculated);
+            // printf("Is fine calculated: %d\n", isfineCalculated);
             if (isfineCalculated == 0)
             {
                 // printf("ere\n");
@@ -168,10 +168,9 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
             {
                 // printf("Fine calculated\n");
                 send(new_socket, "Fine calculated", strlen("Fine calculated"), 0);
-                // recieve the username
-                // clean the socket first
-                memset(buffer, 0, BUFFER_SIZE);
 
+                // recieve the username
+                memset(buffer, 0, BUFFER_SIZE);
                 char username[BUFFER_SIZE] = {0};
                 int valread = read(new_socket, buffer, BUFFER_SIZE);
                 buffer[valread] = '\0';
@@ -186,6 +185,8 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
                 {
                     int fine_zero = 0;
                     send(new_socket, &fine_zero, sizeof(int), 0);
+                    usleep(100000);
+                    send(new_socket, "No fine to pay", strlen("No fine to pay"), 0);
                 }
                 else
                 {
