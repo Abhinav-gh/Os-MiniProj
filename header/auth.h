@@ -13,8 +13,9 @@ typedef struct {
 } User;
 
 
-
+int authHandler(int new_socket);
+User *read_user_data(const char *filename, const char *role);
 int authenticate_user(const char *username, const char *password, const char *role);
-void authHandler(int new_socket);
+
 
 #endif /* AUTH_H */

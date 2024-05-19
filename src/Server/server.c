@@ -6,9 +6,10 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
-#include "../header/server.h"
-#include "../header/auth.h"
+#include "../../header/server.h"
+#include "../../header/auth.h"
 
+int IsAuthenticated = 0;
 
 void startServer(int port) 
 {
@@ -81,7 +82,9 @@ void startServer(int port)
 
 
             // Handle authentication
-            authHandler(new_socket);
+            IsAuthenticated =  authHandler(new_socket); // Step 1 Authentication. Done
+            funcHandler(new_socket, IsAuthenticated); // Step 2 Give functionality.
+
                    
 
             close(new_socket); 
