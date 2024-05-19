@@ -21,7 +21,7 @@ cd Os-MiniProj
 - Open 2 terminals at location. Preferably split terminals.
 - Navigate into the source code folder in both the terminals
 ```
-cd source
+cd src
 ```
 - Make the executables using the makefile provided
 ```
