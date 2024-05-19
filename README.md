@@ -38,3 +38,7 @@ make
 ./client_exec
 ```
 - Refer to the **Database/Books/books.txt** file for fields like ISBN and Genre name. Do not add/delete/modify these files. View them as a reference to how to run the project.
+## Authors
+
+- [@Abhinav-gh](https://www.github.com/Abhinav-gh)
+- [@Transyltooniaa](https://github.com/Transyltooniaa)
