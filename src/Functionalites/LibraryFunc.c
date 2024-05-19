@@ -8,7 +8,8 @@ void writeBSTToFileWrapper(void *args)
     pthread_rwlock_wrlock(&rwlock);
     int result = writeBSTToFile(root, filepath);
     pthread_rwlock_wrlock(&rwlock);
-    if(result == -1){
+    if (result == -1)
+    {
         perror("Failed to write to file");
     }
     free(writeArgs); // Free the allocated memory for arguments
@@ -16,7 +17,7 @@ void writeBSTToFileWrapper(void *args)
 }
 void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorrower *borrowerRoot)
 {
-    printf("Control passed to src/Functionalities/LibraryFunc.c \n");
+    printf("🔧 Control Interface switched to: src/Functionalities/LibraryFunc.c \n");
 
     // Get the functionality requested by the borrower
     char requestedFunc[BUFFER_SIZE] = {0};
@@ -49,19 +50,6 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             time_t t = time(NULL);
             newBook.issueDate = t;
             newBook.returnDate = 0;
-            // if (valread > 0)
-            // {
-            //     addBook(&root, genre, &newBook);
-            //     //THIS IS A DATABASE OPERATION AND MUST BE PROTECTED BY A LOCK. IT SHOULD BE DONE IN A SEPARATE THREAD
-
-            //     // writeBSTToFile(root, "../database/Books/books.txt");
-            //     // send(new_socket, "Book added successfully", strlen("Book added successfully"), 0);
-
-            //     // Doing in separate thread
-            //     pthread_t tid;
-            //     pthread_create(&tid, NULL, writeBSTToFile, root);
-            //     send(new_socket, "Book added successfully", strlen("Book added successfully"), 0);
-            // }
             if (valread > 0)
             {
                 addBook(&root, genre, &newBook);
@@ -104,7 +92,12 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             arr[1][BUFFER_SIZE - 1] = '\0';
             // now remove the book
             removeBook(&root, arr[1], arr[0]);
+            //THIS IS A DATABASE OPERATION
+            // Acquire the lock
+            pthread_rwlock_wrlock(&rwlock);
             writeBSTToFile(root, "../database/Books/books.txt");
+            // Release the lock
+            pthread_rwlock_unlock(&rwlock);
             // printf("Book removed\n");
             send(new_socket, "Book removed successfully", strlen("Book removed successfully"), 0);
         }
@@ -152,8 +145,13 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             }
             // add the borrower
             borrowerRoot = insertBorrower(borrowerRoot, &newBorrower);
+            //THIS IS A DATABASE OPERATION
+            
+            // Acquire the lock
+            pthread_rwlock_wrlock(&rwlock);
             writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
-
+            // Release the lock
+            pthread_rwlock_unlock(&rwlock);
             send(new_socket, "Borrower added successfully", strlen("Borrower added successfully"), 0);
         }
         else if (strcmp(requestedFunc, "removeBorrower") == 0)
@@ -164,7 +162,13 @@ void librarianFunc(int new_socket, struct BSTNodeBook *root, struct BSTNodeBorro
             username[valread] = '\0';
             // printf("Username: %s\n", username);
             borrowerRoot = deleteBorrower(borrowerRoot, username);
+
+            //THIS IS A DATABASE OPERATION
+            // Acquire the lock
+            pthread_rwlock_wrlock(&rwlock);
             writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
+            // Release the lock
+            pthread_rwlock_unlock(&rwlock);
             send(new_socket, "Borrower removed successfully", strlen("Borrower removed successfully"), 0);
         }
 

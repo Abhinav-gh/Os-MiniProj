@@ -1,22 +1,8 @@
 #include "../../header/Functionalities/funcHandlerMain.h"
-// void writeBSTToFileWrapper(void *args)
-// {
-//     WriteArgs *writeArgs = (WriteArgs *)args;
-//     struct BSTNodeBook *root = writeArgs->root;
-//     char *filepath = writeArgs->filepath;
-//     pthread_rwlock_wrlock(&rwlock);
-//     int result = writeBSTToFile(root, filepath);
-//     pthread_rwlock_wrlock(&rwlock);
-//     if(result == -1){
-//         perror("Failed to write to file");
-//     }
-//     free(writeArgs); // Free the allocated memory for arguments
-//     return NULL;
-// }
+
 void borrowerFunc(int new_socket, struct BSTNodeBook *root)
 {
-    printf("Control passed to src/Functionalities/BorrowFunc.c \n");
-
+    printf("🔧 Control Interface switched to: src/Functionalities/BorrowFunc.c\n");
     // Get the functionality requested by the borrower
     char requestedFunc[BUFFER_SIZE] = {0};
     while (strcmp(requestedFunc, "logout") != 0)
@@ -62,15 +48,11 @@ void borrowerFunc(int new_socket, struct BSTNodeBook *root)
                     // update the file. NOTE THAT THIS IS A DATABASE OPERATION AND SHOULD BE PROTECTED BY A LOCK
 
                     // Acquire the write lock
-                //     WriteArgs *writeArgs = malloc(sizeof(WriteArgs));
-                // writeArgs->root = root;
-                // strncpy(writeArgs->filepath, "../database/Books/books.txt", sizeof(writeArgs->filepath));
+               
                     pthread_rwlock_wrlock(&rwlock);
 
                     // CRITICAL SECTION. WRITE TO FILE
-                    // Create a thread to write to the file
-                // pthread_t tid;
-                // pthread_create(&tid, NULL, writeBSTToFileWrapper, (void *)writeArgs);
+                    
                     writeBSTToFile(root, "../database/Books/books.txt");
                     writeBSTToFileBorrower(borrowerRoot, "../database/users/borrower.txt");
 

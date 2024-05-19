@@ -516,7 +516,7 @@ struct BSTNodeBook *root = NULL;
 void initializeBooks()
 {
     ReadDatabaseBooks(&root, "../database/Books/books.txt");
-    printf("Books database initialized\n");
+    printf("📚 Books Database: Initialized. Data repository online and ready for access. 🚀\n");
     // displayAllBooks(root);
     writeBSTToFile(root, "../database/Books/books.txt");
 

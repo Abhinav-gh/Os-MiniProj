@@ -455,7 +455,7 @@ int initializeBorrower()
 {
 
     ReadDatabaseBorrower(&borrowerRoot, "../database/users/borrower.txt");
-    printf("Borrower database initialized\n");
+    printf("📂 Borrower Database: Initialized. User records system operational. 🔄✨\n");
     // displayBorrowers(root);
     // char * borrowerInfo = getAllBorrowersInfoWrapper(borrowerRoot);
     // printf("%s\n", borrowerInfo);

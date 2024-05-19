@@ -5,7 +5,7 @@
 pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
 void initializeLocks() {
     if (pthread_rwlock_init(&rwlock, NULL) != 0) {
-        perror("Failed to initialize read-write lock");
+        perror("🚨Initialization Error: Pthreads Read-Write Lock System failed to activate. Synchronization protocols offline.");
         exit(EXIT_FAILURE);
     }
 }
@@ -21,7 +21,7 @@ void funcHandler(int new_socket){
     initializeBooks();
     initializeBorrower();
     initializeLocks();
-    printf("Pthreads Read-write locks initialized and can now be used\n");
+    printf("🔒 Pthreads Read-Write Lock System: ONLINE. Database integrity and Synchronized operations are now available!\n");
     char role[BUFFER_SIZE] = {0};
     char buffer[BUFFER_SIZE] = {0};
     // read the role coming from the client
