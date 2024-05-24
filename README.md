@@ -49,7 +49,7 @@ make all
 - Very efficient operations by utilizing **data structures** like the **Binary Search Tree**. We have made the BSTs for books and borrowers. The BST is pre-processed with the database files to get it ready for handling user queries. The corresponding helper functions then update the database files accordingly.
     - Borrwing and Returning books with automatic **fine** calculation by the server.
     - Efficient Book Management. Librarians can **manage** (add/remove/modify) all the books in library.
-    - Search and Browse. Users can **search** for books by their unique ISBN number. Searching implemented using BST as mentioned above.
+    - Search and Browse. Users can **search** for books by their unique ISBN. Searching implemented using BST as mentioned above.
 - Multithreading and Concurrent Operations
     - Concurrent user handling. Server support for **multiple clients** performing actions **concurrently** (simultaneously) without performance degradation.
     - Database operation performed by the server in a **separate thread** to prevent blocking. Improves server response time.
