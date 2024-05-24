@@ -8,11 +8,11 @@ This is my course Project for Operating Systems course.
 - Clone the remote repository 
 Using SSH
 ```
-git clone -b progress git@github.com:Transyltooniaa/Os-MiniProj.git
+git clone -b main git@github.com:Transyltooniaa/Os-MiniProj.git
 ```
 Using HTTP
 ```
-git clone -b progress https://github.com/Transyltooniaa/Os-MiniProj.git
+git clone -b main https://github.com/Transyltooniaa/Os-MiniProj.git
 ```
 - Navigate into the project directory
 ```
@@ -28,7 +28,7 @@ cd src
 make clean
 ```
 ```
-make
+make all
 ```
 - Run the the client in one and the server in other terminal  
 ```
